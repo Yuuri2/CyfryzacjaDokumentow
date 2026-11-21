@@ -2,7 +2,7 @@
 package com.hacknation.cyfryzacja.ai;
 
 import tools.jackson.databind.JsonNode;
-import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
+import com.hacknation.cyfryzacja.walidacja.FileValidationService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -43,7 +43,7 @@ public class EdenOcrClient {
 
     // 1. Upload pliku do Eden AI
     private String uploadFile(
-            FileValidationServiece.ValidatedFile file
+            FileValidationService.ValidatedFile file
     ) {
 
         ByteArrayResource resource =
@@ -113,7 +113,7 @@ public class EdenOcrClient {
 
     // 3. Główna metoda ekstrakcji tekstu
     public String extractText(
-            FileValidationServiece.ValidatedFile file
+            FileValidationService.ValidatedFile file
     ) {
 
         if (file == null) {
