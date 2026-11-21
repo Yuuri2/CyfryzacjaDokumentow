@@ -5,6 +5,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.hacknation.cyfryzacja.services.UploadService;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.MediaType;
 import java.util.logging.Logger;
@@ -13,10 +16,16 @@ import java.util.logging.Logger;
 public class Upload {
     
     private static final Logger logger = Logger.getLogger(Upload.class.getName());
+    private final UploadService uploadService;
+
+    public Upload(UploadService uploadService) {
+        this.uploadService = uploadService;
+    }
 
     @PutMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> uploadMultipart(@RequestParam("file") MultipartFile file) {
         logger.info("Received multipart file: " + file.getOriginalFilename());
+        uploadService.upload(file);
         return ResponseEntity.ok().build();
     }
 }
