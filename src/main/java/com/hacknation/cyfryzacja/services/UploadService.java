@@ -3,6 +3,7 @@ package com.hacknation.cyfryzacja.services;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hacknation.cyfryzacja.ai.EdenOcrClient;
 import com.hacknation.cyfryzacja.parsers.DocumentParser;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
@@ -11,10 +12,12 @@ import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 public class UploadService {
     private final FileValidationService fileValidationServiece;
     private final DocumentParser documentParser;
+    private final EdenOcrClient edenOcrClient;
 
-    public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser) {
+    public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser, EdenOcrClient edenOcrClient) {
         this.fileValidationServiece = fileValidationServiece;
         this.documentParser = documentParser;
+        this.edenOcrClient = edenOcrClient;
     }
 
     public void upload(MultipartFile file) {
@@ -23,7 +26,7 @@ public class UploadService {
         String mimeType = validatedFile.mimeType();
 
         if (mimeType.startsWith("image/")) {
-            // TODO: OCR will be handled by the Eden AI/OCR service.
+            edenOcrClient.extractText(file);
             return;
         }
 

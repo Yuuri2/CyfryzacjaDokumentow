@@ -51,7 +51,7 @@ class EdenAiConnectionTest {
 
         try {
             // Wysłanie obrazu do Eden AI i wykonanie OCR
-            String extractedText = edenOcrClient.extractText(validatedFile);
+            String extractedText = edenOcrClient.extractText(file);
 
             // Sprawdzenie, czy OCR zwrócił tekst
             assertFalse(extractedText.isBlank());
