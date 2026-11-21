@@ -20,9 +20,16 @@ public class FileValidationServiece {
 
     private static final Map<String, Set<String>> legalExtensions = Map.ofEntries(
         Map.entry("pdf", Set.of("application/pdf")),
-        Map.entry("doc", Set.of("application/msword", "application/x-tika-msoffice")),
+        Map.entry("doc", Set.of(
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/x-tika-msoffice",
+                "application/x-tika-ooxml"
+        )),
         Map.entry("docx", Set.of(
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/msword",
+                "application/x-tika-msoffice",
                 "application/x-tika-ooxml"
         )),
         Map.entry("ods", Set.of("application/vnd.oasis.opendocument.spreadsheet")),
