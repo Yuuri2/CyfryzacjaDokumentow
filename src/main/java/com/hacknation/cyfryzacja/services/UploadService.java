@@ -3,7 +3,7 @@ package com.hacknation.cyfryzacja.services;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.hacknation.walidacja.FileValidationServiece;
+import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
 
 @Service
 public class UploadService {
