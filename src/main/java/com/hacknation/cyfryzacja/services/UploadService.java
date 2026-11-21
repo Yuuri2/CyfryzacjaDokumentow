@@ -5,15 +5,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hacknation.walidacja.FileValidationServiece;
 
-@Service 
+@Service
 public class UploadService {
+
     private FileValidationServiece fileValidationServiece;
 
     public UploadService(FileValidationServiece fileValidationServiece) {
         this.fileValidationServiece = fileValidationServiece;
     }
 
-    public void upload(MultipartFile file) {
+    public void upload(MultipartFile file) throws Exception {
         fileValidationServiece.validate(file);
     }
 }
