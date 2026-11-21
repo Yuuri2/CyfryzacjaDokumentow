@@ -42,7 +42,7 @@ public class FileValidationServiece {
         this.maxFileSize = maxFileSize;
     }
     //tutaj dodajemy zabezpieczenia przed błędnymi plikami.
-    public ValidatedFile validate(MultipartFile file){
+    public ValidatedFile validate(MultipartFile file) throws Exception{
         if(file == null || file.isEmpty()){
             throw new IllegalArgumentException("Plik jest pusty");
         }
