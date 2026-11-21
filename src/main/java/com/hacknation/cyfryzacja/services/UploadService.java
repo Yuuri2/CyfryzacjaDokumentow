@@ -14,7 +14,7 @@ public class UploadService {
         this.fileValidationServiece = fileValidationServiece;
     }
 
-    public void upload(MultipartFile file) throws Exception {
+    public void upload(MultipartFile file) {
         fileValidationServiece.validate(file);
     }
 }
