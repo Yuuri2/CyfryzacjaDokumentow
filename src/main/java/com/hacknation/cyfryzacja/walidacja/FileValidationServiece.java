@@ -1,4 +1,4 @@
-package com.hacknation.walidacja;
+package com.hacknation.cyfryzacja.walidacja;
 
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +42,7 @@ public class FileValidationServiece {
         this.maxFileSize = maxFileSize;
     }
     //tutaj dodajemy zabezpieczenia przed błędnymi plikami.
-    public ValidatedFile validate(MultipartFile file) throws Exception{
+    public ValidatedFile validate(MultipartFile file) {
         if(file == null || file.isEmpty()){
             throw new IllegalArgumentException("Plik jest pusty");
         }

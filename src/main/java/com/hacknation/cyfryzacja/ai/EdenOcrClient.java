@@ -29,7 +29,7 @@ public class EdenOcrClient {
     private final RestClient client;
 
     public EdenOcrClient(
-            @Value("${edenai.api-key}") String apiKey
+            @Value("${EDENAI_API_KEY}") String apiKey
     ) {
         this.client = RestClient.builder()
                 .baseUrl(BASE_URL)
