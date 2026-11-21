@@ -31,15 +31,13 @@ public class UploadService {
         ValidatedFile validatedFile = fileValidationServiece.validate(file);
 
         String mimeType = validatedFile.mimeType();
-
+        String extractedText;
         if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
 
-            String extractedText = edenOcrClient.extractText(file);
+            extractedText = edenOcrClient.extractText(file);
 
-            System.out.println("Tekst odczytany przez Eden AI:");
-            System.out.println(extractedText);
-
-            return;
+            logger.info("Tekst odczytany przez Eden AI:");
+            logger.info(extractedText);
         }
 
         switch (mimeType) {
