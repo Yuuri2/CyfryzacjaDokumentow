@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hacknation.cyfryzacja.services.UploadService;
 
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.MediaType;
 import java.util.logging.Logger;
 
