@@ -10,8 +10,6 @@ import com.hacknation.cyfryzacja.parsers.DocumentParser;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 
-import com.hacknation.cyfryzacja.ai.EdenOcrClient;
-
 @Service
 public class UploadService {
     private final FileValidationService fileValidationServiece;
@@ -19,17 +17,13 @@ public class UploadService {
     private final EdenOcrClient edenOcrClient;
 
     private static final Logger logger = Logger.getLogger(UploadService.class.getName());
-    private final EdenOcrClient edenOcrClient;
-
 
    public UploadService(
         FileValidationService fileValidationServiece,
         DocumentParser documentParser,
-        EdenOcrClient edenOcrClient
-    , EdenOcrClient edenOcrClient) {
+        EdenOcrClient edenOcrClient) {
         this.fileValidationServiece = fileValidationServiece;
         this.documentParser = documentParser;
-        this.edenOcrClient = edenOcrClient;
         this.edenOcrClient = edenOcrClient;
     }
 
@@ -38,11 +32,9 @@ public class UploadService {
 
         String mimeType = validatedFile.mimeType();
 
-        if (mimeType.equals("image/png")
-                || mimeType.equals("image/jpeg")) {
+        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
 
-            String extractedText =
-                    edenOcrClient.extractText(validatedFile);
+            String extractedText = edenOcrClient.extractText(file);
 
             System.out.println("Tekst odczytany przez Eden AI:");
             System.out.println(extractedText);
