@@ -9,6 +9,7 @@ services:
     environment:
       # app NIE dostaje klucza Eden – woła Eden przez gateway (nginx wstrzykuje klucz)
       EDENAI_BASE_URL: http://gateway:8081/v3
+      JWT_SECRET: ${JWT_SECRET:?ustaw JWT_SECRET w .env}
       JWT_ISSUER: ${JWT_ISSUER:-formforge}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_UPLOAD_MB:-20}MB

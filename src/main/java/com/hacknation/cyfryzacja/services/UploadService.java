@@ -4,12 +4,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hacknation.cyfryzacja.parsers.DocumentParser;
-import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
-import com.hacknation.cyfryzacja.walidacja.FileValidationServiece.ValidatedFile;
+import com.hacknation.cyfryzacja.walidacja.FileValidationService;
+import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 
 @Service
 public class UploadService {
-    private final FileValidationServiece fileValidationServiece;
+    private final FileValidationService fileValidationServiece;
     private final DocumentParser documentParser;
     private final EdenOcrClient edenOcrClient;
 

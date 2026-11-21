@@ -1,7 +1,7 @@
 package com.hacknation.cyfryzacja;
 
 import com.hacknation.cyfryzacja.ai.EdenOcrClient;
-import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
+import com.hacknation.cyfryzacja.walidacja.FileValidationService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ class EdenAiConnectionTest {
     private EdenOcrClient edenOcrClient;
 
     @Autowired
-    private FileValidationServiece fileValidationServiece;
+    private FileValidationService fileValidationServiece;
 
     @Test
     void shouldConnectToEdenAiAndPerformOcr() throws Exception {
@@ -46,7 +46,7 @@ class EdenAiConnectionTest {
         );
 
         // Walidacja pliku
-        FileValidationServiece.ValidatedFile validatedFile =
+        FileValidationService.ValidatedFile validatedFile =
                 fileValidationServiece.validate(file);
 
         try {
