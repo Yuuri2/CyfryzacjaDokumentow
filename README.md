@@ -13,13 +13,15 @@ Architekturę opisuje [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md), a założe
 | Klient Eden AI (upload + OCR) za gatewayem | gotowy, jeszcze niepodpięty do potoku |
 | `POST /api/forms/digitize` zwraca `FormDefinition` | **wersja szkieletowa**: zwraca stały, przykładowy formularz (nie analizuje jeszcze treści pliku) |
 | Ekstrakcja → FormSpec → kompilator → walidator reguł COI | w budowie |
-| JWT | zależności dodane, uwierzytelnianie jeszcze nie włączone |
+| JWT (HS256): weryfikacja tokenów, skrypty generujące token | gotowe |
 | Słowniki, `states`, frontend, wizualizator | zaplanowane |
 
 ## Wymagania
 
 - Docker z Docker Compose v2.
 - Klucz API Eden AI (`EDENAI_API_KEY`).
+- Sekret JWT (`JWT_SECRET`, min. 32 znaki) – np. `openssl rand -base64 48`.
+- Do generowania tokenu: `openssl` (Linux/macOS) albo PowerShell (Windows).
 - Do pracy bez Dockera: JDK 25 (Gradle wrapper jest w repo).
 
 ## Budowanie i uruchomienie (Docker)
@@ -28,7 +30,7 @@ Architekturę opisuje [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md), a założe
 
    ```bash
    cp .env.example .env
-   # uzupełnij EDENAI_API_KEY w .env (plik .env nie jest śledzony przez git)
+   # uzupełnij EDENAI_API_KEY i JWT_SECRET w .env (plik .env nie jest śledzony przez git)
    ```
 
 2. Zbuduj obraz i uruchom z korzenia repozytorium:
@@ -68,12 +70,33 @@ Zmienne środowiskowe (plik `.env`, wzór w `.env.example`):
 | `MAX_UPLOAD_MB` | `20` | Maksymalny rozmiar pliku. Egzekwowany w nginx (413) i w aplikacji (`spring.servlet.multipart.*`). |
 | `APP_BIND` | `127.0.0.1` | Interfejs, na którym publikowany jest port. Dla dostępu z sieci ustaw `0.0.0.0`. |
 | `APP_PORT` | `8080` | Port na hoście. |
-| `JWT_ISSUER` | `formforge` | Wystawca tokenu JWT (przekazywany do aplikacji). |
-| `JWT_TTL_SECONDS` | `3600` | Czas ważności tokenu (przekazywany do aplikacji). |
+| `JWT_SECRET` | – (wymagana) | Sekret podpisu JWT (HS256), min. 32 znaki. Bez niego kontener `app` nie wystartuje. |
+| `JWT_ISSUER` | `formforge` | Wymagany wystawca (`iss`) tokenu; tokeny z innym `iss` są odrzucane. |
+| `JWT_TTL_SECONDS` | `3600` | Domyślny czas ważności tokenu wystawianego przez `scripts/generate-jwt.*`. Aplikacja egzekwuje `exp` zapisany w tokenie. |
 
 Parametry aplikacji w `src/main/resources/application.yaml`: `app.upload.max-size-bytes` (limit rozmiaru sprawdzany w `FileValidationService`), adresy i model Eden (`app.edenai.*`). W kontenerze adres bazowy Eden to `EDENAI_BASE_URL=http://gateway:8081/v3` (ustawiany w `docker-compose.yml`).
 
-> JWT: parametry `JWT_ISSUER` i `JWT_TTL_SECONDS` są już przekazywane do aplikacji, ale sekret podpisu (`JWT_SECRET`) i filtr uwierzytelniania nie są jeszcze wdrożone. Aktualne wywołania API nie wymagają tokenu.
+## Uwierzytelnianie (JWT)
+
+Wszystkie ścieżki aplikacji (`/upload`, `/api/**`) wymagają tokenu JWT w nagłówku `Authorization: Bearer <token>`. Jedyna ścieżka publiczna to `GET /health` (obsługuje ją nginx).
+
+- Aplikacja **weryfikuje** tokeny: podpis HS256 kluczem `JWT_SECRET`, issuer (`JWT_ISSUER`) i datę wygaśnięcia (`exp`). Tokeny z innym algorytmem (w tym `alg: none` i HS384/HS512), z błędnym podpisem, innym issuerem lub wygasłe są odrzucane. Odpowiedź przy braku lub niepoprawnym tokenie: `401` z `{"error":"unauthorized"}`.
+- Aplikacja **nie wystawia** tokenów. Token generują skrypty z tym samym sekretem co aplikacja (claims: `iss`, `sub`=`jury`, `iat`, `exp`).
+
+Generowanie tokenu (po uruchomieniu kontenerów; skrypt nie wypisuje sekretu):
+
+```bash
+set -a; source .env; set +a                      # wczytaj JWT_SECRET, JWT_ISSUER, JWT_TTL_SECONDS
+export JWT_TOKEN=$(./scripts/generate-jwt.sh)    # opcjonalnie JWT_SUBJECT=<nazwa>
+curl -X PUT -F "file=@Wniosek.pdf" -H "Authorization: Bearer $JWT_TOKEN" http://localhost:8080/upload
+```
+
+```powershell
+$env:JWT_SECRET = "<ten sam sekret co w .env>"
+$env:JWT_TOKEN = .\scripts\generate-jwt.ps1
+```
+
+Token ma trzy części oddzielone kropkami (`nagłówek.payload.podpis`). Po zmianie `JWT_SECRET` trzeba odtworzyć kontener `app` i wygenerować nowy token.
 
 ## REST API
 
@@ -84,7 +107,7 @@ Wszystkie wywołania idą przez gateway: `http://localhost:8080`.
 Przyjmuje jeden plik formularza i zwraca JSON konfiguracji e-formularza.
 
 ```bash
-curl -X POST -F "file=@Wniosek.pdf" http://localhost:8080/api/forms/digitize
+curl -X POST -F "file=@Wniosek.pdf" -H "Authorization: Bearer $JWT_TOKEN" http://localhost:8080/api/forms/digitize
 ```
 
 - Body: `multipart/form-data`, pole `file`.
@@ -108,12 +131,12 @@ curl -X POST -F "file=@Wniosek.pdf" http://localhost:8080/api/forms/digitize
 Waliduje i parsuje plik (multipart, pole `file`); zwraca `200` bez treści. Endpoint pomocniczy do testów walidacji uploadu.
 
 ```bash
-curl -X PUT -F "file=@Wniosek.pdf" http://localhost:8080/upload
+curl -X PUT -F "file=@Wniosek.pdf" -H "Authorization: Bearer $JWT_TOKEN" http://localhost:8080/upload
 ```
 
 ### `GET /health`
 
-Odpowiada `200 ok` (obsługiwane przez gateway).
+Odpowiada `200 ok` (obsługiwane przez gateway, bez tokenu).
 
 ### Walidacja pliku
 
@@ -127,24 +150,29 @@ Uwaga: przy odrzuconym pliku aplikacja na razie zwraca ogólny błąd serwera (5
 - Procesy działają jako użytkownicy nie-root (aplikacja `10001`, nginx `101`), `cap_drop: ALL`, `no-new-privileges`, system plików tylko do odczytu, `/tmp` w pamięci (`tmpfs`, `noexec`) – pliki użytkowników nie są zapisywane trwale.
 - Na hoście publikowany jest wyłącznie port 8080 gatewaya (domyślnie tylko `127.0.0.1`).
 - Kontener `app` jest w sieci `internal` (bez dostępu do internetu). Do Eden AI wychodzi tylko nginx, z allowlistą trzech endpointów (`POST /v3/upload`, `/v3/universal-ai`, `/v3/chat/completions`), a port wewnętrzny 8081 jest dostępny tylko z podsieci `backend`.
-- Sekrety wyłącznie ze zmiennych środowiskowych w runtime; limity logów (3 × 10 MB).
+- Sekrety (`JWT_SECRET`, `EDENAI_API_KEY`) wyłącznie ze zmiennych środowiskowych w runtime; limity logów (3 × 10 MB).
 
 ## Skrypty testowe
 
-`scripts/upload-tests.sh` (Linux/macOS) i `scripts/upload-tests.ps1` (Windows) wysyłają `PUT /upload` dla każdego folderu z `Materiały/Materiały_dc` (maks. jeden plik każdego typu) i wypisują kody HTTP:
+`scripts/token_test.sh` (Linux/macOS) i `scripts/token_test.ps1` (Windows) wysyłają `PUT /upload` z tokenem JWT dla każdego folderu z `Materiały/Materiały_dc` (maks. jeden plik każdego typu) i wypisują kody HTTP. Token jest brany ze zmiennej `JWT_TOKEN` (bez niej skrypt kończy się komunikatem):
 
 ```bash
-./scripts/upload-tests.sh [http://localhost:8080/upload]
+export JWT_TOKEN=$(./scripts/generate-jwt.sh)
+./scripts/token_test.sh [http://localhost:8080/upload]
 ```
 
 ```powershell
-.\scripts\upload-tests.ps1 [-Url http://localhost:8080/upload]
+$env:JWT_TOKEN = .\scripts\generate-jwt.ps1
+.\scripts\token_test.ps1 [-Url http://localhost:8080/upload]
 ```
+
+`scripts/upload-tests.*` to wersja bez tokenu – po włączeniu JWT każde żądanie dostanie `401`, więc służy już tylko do sprawdzenia, że uwierzytelnianie blokuje niezalogowane wywołania.
 
 ## Struktura repozytorium
 
 ```
 src/main/java/com/hacknation/cyfryzacja/
+  security/      JwtProperties, JwtTokenVerifier, JwtAuthFilter, SecurityConfig – uwierzytelnianie JWT
   controllers/   FormDigitizerController (POST /api/forms/digitize), UploadController (PUT /upload)
   walidacja/     FileValidationService – walidacja pliku
   parsers/       DocumentParser (Tika) – ekstrakcja tekstu
@@ -152,7 +180,7 @@ src/main/java/com/hacknation/cyfryzacja/
   services/      UploadService, FTJGenerator (generator formularza)
   JSONRes/       FormDefinition – model docelowego JSON-a
 Docker/          Dockerfile, docker-compose.yml, nginx/default.conf.template (API Gateway)
-scripts/         skrypty testowe uploadu
+scripts/         generate-jwt.*, token_test.*, upload-tests.* (skrypty tokenu i testów uploadu)
 docs/            PROJEKT.md, PLAN.md, ARCHITEKTURA.md
 Materiały/       materiały konkursowe (zadanie, regulamin, formularze)
 ```

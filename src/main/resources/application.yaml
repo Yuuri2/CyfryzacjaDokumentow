@@ -12,3 +12,7 @@ app:
     chat-url: https://api.edenai.run/v3/chat/completions
     ocr-url: https://api.edenai.run/v3/universal-ai
     default-model: google/gemma-4-31b-it
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: ${JWT_ISSUER:formforge}
+    ttl-seconds: ${JWT_TTL_SECONDS:3600}
