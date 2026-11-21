@@ -12,17 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
+import com.hacknation.cyfryzacja.parsers.DocumentParseException.UnreadableDocumentException;
+
 @Service
 public class PdfParser implements Parser {
 
     private final PDFParser pdfParser = new PDFParser();
 
     @Override
-    public String parse(MultipartFile file) throws IOException, TikaException {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("Plik jest pusty");
-        }
-
+    public String parse(MultipartFile file) {
         BodyContentHandler handler = new BodyContentHandler(-1);
         Metadata metadata = new Metadata();
         metadata.set(Metadata.CONTENT_TYPE, "application/pdf");
@@ -30,8 +28,10 @@ public class PdfParser implements Parser {
         try (InputStream input = file.getInputStream()) {
             pdfParser.parse(input, handler, metadata, new ParseContext());
             return handler.toString();
+        } catch (IOException | TikaException e) {
+            throw new UnreadableDocumentException("Nie udało się odczytać pliku PDF", e);
         } catch (SAXException e) {
-            throw new TikaException("Nie udało się przetworzyć tekstu z pliku PDF", e);
+            throw new UnreadableDocumentException("Nie udało się przetworzyć tekstu z pliku PDF", e);
         }
     }
 }
