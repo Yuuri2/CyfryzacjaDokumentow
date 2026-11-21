@@ -1,4 +1,4 @@
-# FormForge – cyfryzacja formularzy urzędowych
+# e-skw – cyfryzacja formularzy urzędowych
 
 Usługa REST przyjmująca pojedynczy blankiet formularza (PDF, DOC, DOCX, ODS, XLSX, JPG, JPEG, PNG) i zwracająca **JSON konfiguracji e-formularza** (`title`, `tabs`, `flow`) w strukturze oczekiwanej przez Generator Formularzy COI. Projekt powstał na hackathon HackNation 2026 (zadanie COI „Cyfryzacja formularzy”).
 
