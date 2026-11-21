@@ -68,8 +68,6 @@ public record FormDefinition(
     ) {}
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record FormFlow(
-            String type,
-            String query,
             List<FlowLink> links
     ) {}
     public record FlowLink(
