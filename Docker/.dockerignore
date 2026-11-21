@@ -1,0 +1,9 @@
+.git
+.gradle
+build
+Materiały
+docs
+*.md
+.env
+.idea
+.vscode
