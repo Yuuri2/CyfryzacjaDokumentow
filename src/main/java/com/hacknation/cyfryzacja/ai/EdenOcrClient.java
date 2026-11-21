@@ -23,9 +23,9 @@ public class EdenOcrClient {
     private static final String BASE_URL =
             "https://api.edenai.run/v3";
 
-    private static final String OCR_MODEL =
-            "ocr/ocr/mistral/mistral-ocr-4-0";
-
+private static final String OCR_MODEL =
+        "ocr/ocr/mistral/mistral-ocr-4-1";
+        
     private final RestClient client;
 
     public EdenOcrClient(
