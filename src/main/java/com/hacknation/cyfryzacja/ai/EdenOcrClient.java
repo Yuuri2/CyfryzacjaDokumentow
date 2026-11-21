@@ -27,7 +27,7 @@ public class EdenOcrClient {
         this.client = builder.build();
     }
 
-    public String uploadFile(MultipartFile file) {
+    private String uploadFile(MultipartFile file) {
         byte[] content;
         try {
             content = file.getBytes();

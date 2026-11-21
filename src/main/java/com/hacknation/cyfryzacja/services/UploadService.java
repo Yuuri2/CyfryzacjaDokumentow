@@ -1,5 +1,7 @@
 package com.hacknation.cyfryzacja.services;
 
+import java.util.logging.Logger;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +16,8 @@ public class UploadService {
     private final DocumentParser documentParser;
     private final EdenOcrClient edenOcrClient;
 
+    private static final Logger logger = Logger.getLogger(UploadService.class.getName());
+
     public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser, EdenOcrClient edenOcrClient) {
         this.fileValidationServiece = fileValidationServiece;
         this.documentParser = documentParser;
@@ -24,9 +28,9 @@ public class UploadService {
         ValidatedFile validatedFile = fileValidationServiece.validate(file);
 
         String mimeType = validatedFile.mimeType();
-
+        String extractedText;
         if (mimeType.startsWith("image/")) {
-            edenOcrClient.extractText(file);
+            extractedText = edenOcrClient.extractText(file);
             return;
         }
 
@@ -38,10 +42,12 @@ public class UploadService {
                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                  "application/x-tika-msoffice",
                  "application/x-tika-ooxml":
-                documentParser.parse(file);
+                extractedText = documentParser.parse(file);
                 break;
             default:
                 throw new IllegalArgumentException("Nieobsługiwany typ MIME: " + mimeType);
         }
+
+        logger.info("udalo sie zgrać text");
     }
 }
