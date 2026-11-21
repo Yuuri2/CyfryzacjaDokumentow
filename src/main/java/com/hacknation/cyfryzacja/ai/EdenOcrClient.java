@@ -1,8 +1,9 @@
-//JsonNode służy tutaj wyłącznie do odebrania odpowiedzi technicznej API. Nie prosimy AI o generowanie JSON-a formularza.
 
 package com.hacknation.cyfryzacja.ai;
 
 import tools.jackson.databind.JsonNode;
+import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -12,54 +13,52 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Service
 public class EdenOcrClient {
 
-    private static final String BASE_URL =
-            "https://api.edenai.run/v3";
+    private static final String OCR_MODEL =
+            "ocr/ocr/mistral/mistral-ocr-4-1";
 
-private static final String OCR_MODEL =
-        "ocr/ocr/mistral/mistral-ocr-4-1";
-        
     private final RestClient client;
 
-    // W Dockerze baseUrl wskazuje na gateway (nginx), który sam dokleja klucz,
-    // więc apiKey jest pusty. Lokalnie (bez gatewaya) klucz idzie z EDENAI_API_KEY.
     public EdenOcrClient(
             @Value("${EDENAI_BASE_URL:https://api.edenai.run/v3}") String baseUrl,
             @Value("${EDENAI_API_KEY:}") String apiKey
     ) {
-        RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl);
+        RestClient.Builder builder =
+                RestClient.builder().baseUrl(baseUrl);
+
         if (!apiKey.isBlank()) {
-            builder.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey);
+            builder.defaultHeader(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer " + apiKey
+            );
         }
+
         this.client = builder.build();
     }
 
-    // 1. Upload dokumentu do Eden AI
-    private String uploadFile(MultipartFile file)
-            throws IOException {
+    // 1. Upload pliku do Eden AI
+    private String uploadFile(
+            FileValidationServiece.ValidatedFile file
+    ) {
 
         ByteArrayResource resource =
-                new ByteArrayResource(file.getBytes()) {
+                new ByteArrayResource(file.content()) {
 
                     @Override
                     public String getFilename() {
-                        return file.getOriginalFilename() != null
-                                ? file.getOriginalFilename()
-                                : "document";
+                        return file.filename();
                     }
                 };
 
         HttpHeaders fileHeaders = new HttpHeaders();
 
         fileHeaders.setContentType(
-                MediaType.APPLICATION_OCTET_STREAM
+                MediaType.parseMediaType(file.mimeType())
         );
 
         MultiValueMap<String, Object> body =
@@ -81,8 +80,7 @@ private static final String OCR_MODEL =
                 !response.hasNonNull("file_id")) {
 
             throw new IllegalStateException(
-                    "Nie otrzymano file_id z Eden AI: "
-                            + response
+                    "Nie otrzymano file_id z Eden AI"
             );
         }
 
@@ -94,9 +92,7 @@ private static final String OCR_MODEL =
 
         Map<String, Object> request = Map.of(
                 "model", OCR_MODEL,
-                "input", Map.of(
-                        "file", fileId
-                )
+                "input", Map.of("file", fileId)
         );
 
         JsonNode response = client.post()
@@ -114,12 +110,42 @@ private static final String OCR_MODEL =
 
         return response;
     }
-    // 3. Główna metoda ekstrakcji
-    public JsonNode extract(MultipartFile file)
-            throws IOException {
+
+    // 3. Główna metoda ekstrakcji tekstu
+    public String extractText(
+            FileValidationServiece.ValidatedFile file
+    ) {
+
+        if (file == null) {
+            throw new IllegalArgumentException(
+                    "Plik nie może być null"
+            );
+        }
 
         String fileId = uploadFile(file);
 
-        return performOcr(fileId);
+        JsonNode response = performOcr(fileId);
+
+        if (!"success".equals(
+                response.path("status").asText())) {
+
+            throw new IllegalStateException(
+                    "Błąd OCR Eden AI: "
+                            + response.path("error")
+            );
+        }
+
+        String extractedText = response
+                .path("output")
+                .path("text")
+                .asText();
+
+        if (extractedText.isBlank()) {
+            throw new IllegalStateException(
+                    "Eden AI nie zwróciło tekstu OCR"
+            );
+        }
+
+        return extractedText;
     }
 }
