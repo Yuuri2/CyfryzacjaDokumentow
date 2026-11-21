@@ -15,16 +15,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
-import java.util.Set;
 
 @Service
 public class EdenOcrClient {
 
     private static final String OCR_MODEL =
             "ocr/ocr/mistral/mistral-ocr-4-1";
-
-    private static final Set<String> ALLOWED_MIME_TYPES =
-            Set.of("image/png", "image/jpeg");
 
     private final RestClient client;
 
@@ -45,7 +41,7 @@ public class EdenOcrClient {
         this.client = builder.build();
     }
 
-    // 1. Upload zwalidowanego obrazu do Eden AI
+    // 1. Upload pliku do Eden AI
     private String uploadFile(
             FileValidationServiece.ValidatedFile file
     ) {
@@ -120,11 +116,9 @@ public class EdenOcrClient {
             FileValidationServiece.ValidatedFile file
     ) {
 
-        if (file == null ||
-                !ALLOWED_MIME_TYPES.contains(file.mimeType())) {
-
+        if (file == null) {
             throw new IllegalArgumentException(
-                    "OCR obsługuje wyłącznie pliki PNG i JPG"
+                    "Plik nie może być null"
             );
         }
 
