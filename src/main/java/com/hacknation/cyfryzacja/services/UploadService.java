@@ -11,6 +11,8 @@ import com.hacknation.cyfryzacja.walidacja.FileValidationServiece.ValidatedFile;
 public class UploadService {
     private final FileValidationServiece fileValidationServiece;
     private final DocumentParser documentParser;
+    private final EdenOcrClient edenOcrClient;
+
 
     public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser) {
         this.fileValidationServiece = fileValidationServiece;
@@ -22,8 +24,15 @@ public class UploadService {
 
         String mimeType = validatedFile.mimeType();
 
-        if (mimeType.startsWith("image/")) {
-            // TODO: OCR will be handled by the Eden AI/OCR service.
+        if (mimeType.equals("image/png")
+                || mimeType.equals("image/jpeg")) {
+
+            String extractedText =
+                    edenOcrClient.extractText(validatedFile);
+
+            System.out.println("Tekst odczytany przez Eden AI:");
+            System.out.println(extractedText);
+
             return;
         }
 
