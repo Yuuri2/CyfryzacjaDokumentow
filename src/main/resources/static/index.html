@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyfryzacja formularzy</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        #buttonContainer {
+            width: 100%;
+            height: 20%;
+            min-height: 120px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-bottom: 2px solid #334155;
+        }
+        .uploadRow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        #fileInput {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 6px 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+        }
+        button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #sendBtn {
+            background-color: #38bdf8;
+            color: #082f49;
+        }
+        #sendBtn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .secondaryBtn {
+            background-color: #334155;
+            color: #f8fafc;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        .secondaryBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #statusBar {
+            font-size: 13px;
+            color: #cbd5e1;
+            min-height: 18px;
+        }
+        #resultContainer {
+            height: 80%;
+            width: 100%;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+        }
+        #taskbar {
+            width: 100%;
+            height: 40px;
+            background-color: #334155;
+            display: flex;
+            align-items: stretch;
+            overflow-x: auto;
+            border-bottom: 1px solid #1e293b;
+        }
+        .taskbarItem {
+            min-width: 140px;
+            max-width: 240px;
+            height: 100%;
+            border-right: 1px solid #1e293b;
+            background-color: #475569;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px 0 12px;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 13px;
+        }
+        .taskbarItem.active {
+            background-color: #0f172a;
+            border-top: 3px solid #38bdf8;
+            font-weight: 600;
+        }
+        .tabTitle {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .closeTabButton {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .closeTabButton:hover {
+            background-color: #dc2626;
+        }
+        #content {
+            width: 100%;
+            flex: 1;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #contentToolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #1e293b;
+            border-bottom: 1px solid #334155;
+            font-size: 13px;
+        }
+        #jsonViewer {
+            margin: 0;
+            padding: 16px;
+            flex: 1;
+            overflow: auto;
+            text-align: left;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div id="buttonContainer">
+        <div class="uploadRow">
+            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ods,.xlsx,.jpg,.jpeg,.png">
+            <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="confirmCheck">
+                Potwierdzam wysłanie pliku
+            </label>
+            <button id="sendBtn" disabled>Generuj JSON</button>
+        </div>
+        <div id="statusBar">Wybierz dokument lub zdjęcie formularza, potwierdź i kliknij „Generuj JSON”.</div>
+    </div>
+
+    <div id="resultContainer">
+        <div id="taskbar"></div>
+        <div id="content">
+            <div id="contentToolbar">
+                <span id="activeFileLabel">Brak otwartych kart</span>
+                <div style="display: flex; gap: 8px;">
+                    <button id="copyBtn" class="secondaryBtn" disabled>Kopiuj JSON</button>
+                    <button id="downloadBtn" class="secondaryBtn" disabled>Pobierz .json</button>
+                </div>
+            </div>
+            <pre id="jsonViewer">Brak wygenerowanych formularzy. Dodaj plik na górze, aby utworzyć pierwszą kartę.</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/forms/digitize';
+
+        const fileInput = document.getElementById('fileInput');
+        const confirmCheck = document.getElementById('confirmCheck');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusBar = document.getElementById('statusBar');
+        const taskbar = document.getElementById('taskbar');
+        const activeFileLabel = document.getElementById('activeFileLabel');
+        const jsonViewer = document.getElementById('jsonViewer');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Lista otwartych kart: { id, fileName, jsonText, isError }
+        let tabs = [];
+        let activeTabId = null;
+
+        function updateSendButton() {
+            sendBtn.disabled = !(fileInput.files.length > 0 && confirmCheck.checked);
+        }
+
+        fileInput.addEventListener('change', () => {
+            confirmCheck.checked = false;
+            updateSendButton();
+            if (fileInput.files.length > 0) {
+                const f = fileInput.files[0];
+                statusBar.textContent = `Wybrano: ${f.name} (${(f.size / 1024).toFixed(1)} KB) — zaznacz potwierdzenie.`;
+            }
+        });
+
+        confirmCheck.addEventListener('change', updateSendButton);
+
+        sendBtn.addEventListener('click', async () => {
+            if (fileInput.files.length === 0 || !confirmCheck.checked) return;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            sendBtn.disabled = true;
+            statusBar.textContent = `Przetwarzanie pliku "${file.name}"...`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const rawText = await response.text();
+                let prettyText = rawText;
+                try {
+                    prettyText = JSON.stringify(JSON.parse(rawText), null, 2);
+                } catch (_) {}
+
+                const newTab = {
+                    id: crypto.randomUUID(),
+                    fileName: file.name,
+                    jsonText: prettyText,
+                    isError: !response.ok
+                };
+
+                tabs.push(newTab);
+                activeTabId = newTab.id;
+                renderTabs();
+
+                statusBar.textContent = response.ok
+                    ? `Gotowe: wygenerowano JSON dla "${file.name}".`
+                    : `Błąd HTTP ${response.status} dla pliku "${file.name}".`;
+
+                // Reset wyboru pliku po wysłaniu
+                fileInput.value = '';
+                confirmCheck.checked = false;
+            } catch (err) {
+                statusBar.textContent = `Błąd połączenia z serwerem: ${err.message}`;
+            } finally {
+                updateSendButton();
+            }
+        });
+
+        function renderTabs() {
+            taskbar.innerHTML = '';
+
+            tabs.forEach(tab => {
+                const item = document.createElement('div');
+                item.className = 'taskbarItem' + (tab.id === activeTabId ? ' active' : '');
+                item.title = tab.fileName;
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'tabTitle';
+                titleSpan.textContent = tab.fileName;
+
+                const closeBtn = document.createElement('span');
+                closeBtn.className = 'closeTabButton';
+                closeBtn.textContent = 'X';
+                closeBtn.title = 'Zamknij kartę';
+
+                // Kliknięcie karty przełącza podgląd
+                item.addEventListener('click', () => {
+                    activeTabId = tab.id;
+                    renderTabs();
+                });
+
+                // Kliknięcie X zamyka kartę (bez przełączania na nią)
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeTab(tab.id);
+                });
+
+                item.appendChild(titleSpan);
+                item.appendChild(closeBtn);
+                taskbar.appendChild(item);
+            });
+
+            renderActiveContent();
+        }
+
+        function closeTab(tabId) {
+            const index = tabs.findIndex(t => t.id === tabId);
+            if (index === -1) return;
+
+            tabs.splice(index, 1);
+
+            if (activeTabId === tabId) {
+                if (tabs.length === 0) {
+                    activeTabId = null;
+                } else {
+                    const nextIndex = Math.min(index, tabs.length - 1);
+                    activeTabId = tabs[nextIndex].id;
+                }
+            }
+
+            renderTabs();
+        }
+
+        function renderActiveContent() {
+            const activeTab = tabs.find(t => t.id === activeTabId);
+
+            if (!activeTab) {
+                activeFileLabel.textContent = 'Brak otwartych kart';
+                jsonViewer.textContent = 'Brak wygenerowanych formularzy. Dodaj plik na górze, aby utworzyć pierwszą kartę.';
+                jsonViewer.style.color = '#e2e8f0';
+                copyBtn.disabled = true;
+                downloadBtn.disabled = true;
+                return;
+            }
+
+            activeFileLabel.textContent = `Plik: ${activeTab.fileName}`;
+            jsonViewer.textContent = activeTab.jsonText;
+            jsonViewer.style.color = activeTab.isError ? '#fca5a5' : '#e2e8f0';
+            copyBtn.disabled = false;
+            downloadBtn.disabled = activeTab.isError;
+        }
+
+        copyBtn.addEventListener('click', async () => {
+            const activeTab = tabs.find(t => t.id === activeTabId);
+            if (!activeTab) return;
+            await navigator.clipboard.writeText(activeTab.jsonText);
+            statusBar.textContent = `Skopiowano JSON z karty "${activeTab.fileName}" do schowka.`;
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const activeTab = tabs.find(t => t.id === activeTabId);
+            if (!activeTab || activeTab.isError) return;
+
+            const baseName = activeTab.fileName.replace(/\.[^.]+$/, '');
+            const blob = new Blob([activeTab.jsonText], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `konfiguracja_form_${baseName}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

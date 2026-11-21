@@ -24,7 +24,7 @@ public class FTJGenerator {
         String title = rawTitle.length() > 255 ? rawTitle.substring(0, 255) : rawTitle;
 
         FormQuestion applicantNameField = new FormQuestion(
-                0, 0, 1, 1,
+                0, 0, 1, 1, null,
                 new FormField(
                         UUID.randomUUID().toString(),
                         "TEXT_FIELD",
@@ -53,7 +53,7 @@ public class FTJGenerator {
         );
 
         FormQuestion finishInfo = new FormQuestion(
-                0, 0, 1, 1,
+                0, 0, 1, 1, null,
                 new FormField(
                         UUID.randomUUID().toString(),
                         "INFO_SECTION",
