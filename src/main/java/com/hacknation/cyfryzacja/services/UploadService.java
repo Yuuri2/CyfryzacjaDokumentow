@@ -7,6 +7,8 @@ import com.hacknation.cyfryzacja.parsers.DocumentParser;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 
+import com.hacknation.cyfryzacja.ai.EdenOcrClient;
+
 @Service
 public class UploadService {
     private final FileValidationService fileValidationServiece;
@@ -14,9 +16,14 @@ public class UploadService {
     private final EdenOcrClient edenOcrClient;
 
 
-    public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser) {
+   public UploadService(
+        FileValidationService fileValidationServiece,
+        DocumentParser documentParser,
+        EdenOcrClient edenOcrClient
+    ) {
         this.fileValidationServiece = fileValidationServiece;
         this.documentParser = documentParser;
+        this.edenOcrClient = edenOcrClient;
     }
 
     public void upload(MultipartFile file) {
