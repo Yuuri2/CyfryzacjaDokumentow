@@ -12,12 +12,12 @@ import org.springframework.http.MediaType;
 import java.util.logging.Logger;
 
 @Controller 
-public class Upload {
+public class UploadController {
     
-    private static final Logger logger = Logger.getLogger(Upload.class.getName());
+    private static final Logger logger = Logger.getLogger(UploadController.class.getName());
     private final UploadService uploadService;
 
-    public Upload(UploadService uploadService) {
+    public UploadController(UploadService uploadService) {
         this.uploadService = uploadService;
     }
 
