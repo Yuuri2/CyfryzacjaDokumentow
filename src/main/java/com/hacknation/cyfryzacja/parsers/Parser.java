@@ -1,8 +1,7 @@
 package com.hacknation.cyfryzacja.parsers;
 
-/**
- * Parser
- */
+import org.springframework.web.multipart.MultipartFile;
+
 public interface Parser {
-    public String parse();
+    public String parse(MultipartFile file);
 }
