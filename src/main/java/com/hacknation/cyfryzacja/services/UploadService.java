@@ -12,7 +12,7 @@ public class UploadService {
     private final FileValidationServiece fileValidationServiece;
     private final DocumentParser documentParser;
 
-    public UploadService(FileValidationServiece fileValidationServiece, DocumentParser documentParser) {
+    public UploadService(FileValidationService fileValidationServiece, DocumentParser documentParser) {
         this.fileValidationServiece = fileValidationServiece;
         this.documentParser = documentParser;
     }

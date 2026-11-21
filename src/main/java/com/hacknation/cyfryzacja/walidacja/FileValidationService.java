@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service 
-public class FileValidationServiece {
+public class FileValidationService {
     
     private static final int maxNameLength = 250;
     private static final Set<Character> forbiddenChars = Set.of(
@@ -45,7 +45,7 @@ public class FileValidationServiece {
     private final Tika tika = new Tika();
     private final long maxFileSize;
 
-    public FileValidationServiece(@Value("${app.upload.max-size-bytes:10485760}") long maxFileSize) {
+    public FileValidationService(@Value("${app.upload.max-size-bytes:10485760}") long maxFileSize) {
         this.maxFileSize = maxFileSize;
     }
     //tutaj dodajemy zabezpieczenia przed błędnymi plikami.
