@@ -28,16 +28,17 @@ private static final String OCR_MODEL =
         
     private final RestClient client;
 
+    // W Dockerze baseUrl wskazuje na gateway (nginx), który sam dokleja klucz,
+    // więc apiKey jest pusty. Lokalnie (bez gatewaya) klucz idzie z EDENAI_API_KEY.
     public EdenOcrClient(
-            @Value("${EDENAI_API_KEY}") String apiKey
+            @Value("${EDENAI_BASE_URL:https://api.edenai.run/v3}") String baseUrl,
+            @Value("${EDENAI_API_KEY:}") String apiKey
     ) {
-        this.client = RestClient.builder()
-                .baseUrl(BASE_URL)
-                .defaultHeader(
-                        HttpHeaders.AUTHORIZATION,
-                        "Bearer " + apiKey
-                )
-                .build();
+        RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl);
+        if (!apiKey.isBlank()) {
+            builder.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey);
+        }
+        this.client = builder.build();
     }
 
     // 1. Upload dokumentu do Eden AI

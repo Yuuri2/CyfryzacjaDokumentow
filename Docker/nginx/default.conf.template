@@ -1,0 +1,92 @@
+# API Gateway (nginx). Szablon przetwarza envsubst: EDENAI_API_KEY, MAX_UPLOAD_MB.
+limit_req_zone  $binary_remote_addr zone=api:10m rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=perip:10m;
+limit_req_status  429;
+limit_conn_status 429;
+
+# ---- WEJŚCIE: klient -> app (sieć frontend) ----
+server {
+    listen 8080;
+    server_tokens off;
+    client_max_body_size ${MAX_UPLOAD_MB}m;
+    client_body_timeout 30s;
+    client_header_timeout 15s;
+    send_timeout 30s;
+    limit_conn perip 20;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Cache-Control "no-store" always;
+
+    # healthcheck gatewaya (bez wchodzenia do aplikacji)
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Upload: wyłącznie PUT (GET/HEAD/POST/... odcięte na gatewayu)
+    location = /upload {
+        limit_req zone=api burst=20 nodelay;
+        limit_except PUT { deny all; }
+        proxy_pass http://app:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 5s;
+    }
+
+    # Pozostałe ścieżki API aplikacji (reszta -> 404)
+    location /api/ {
+        limit_req zone=api burst=20 nodelay;
+        limit_except GET POST PUT { deny all; }
+        proxy_pass http://app:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 5s;
+    }
+
+    location / { return 404; }
+}
+
+# ---- WYJŚCIE: app -> Eden AI (tylko sieć backend; klucz wstrzykiwany tutaj) ----
+server {
+    listen 8081;
+    server_tokens off;
+    client_max_body_size ${MAX_UPLOAD_MB}m;
+    # Tylko kontenery z sieci backend (podsieć przypięta w docker-compose.yml)
+    allow 172.29.250.0/24;
+    deny all;
+    resolver 127.0.0.11 valid=30s ipv6=off;
+    set $eden "api.edenai.run";
+
+    # Allowlista: wyłącznie endpointy używane przez EdenOcrClient
+    location ~ ^/v3/(upload|universal-ai|chat/completions)$ {
+        limit_except POST { deny all; }
+        proxy_pass https://$eden;
+        proxy_http_version 1.1;
+        proxy_set_header Host $eden;
+        proxy_set_header Authorization "Bearer ${EDENAI_API_KEY}";
+        proxy_ssl_server_name on;
+        proxy_ssl_name $eden;
+        proxy_ssl_verify on;
+        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 120s;
+    }
+
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location / { return 403; }
+}

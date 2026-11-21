@@ -6,10 +6,9 @@ services:
       dockerfile: Docker/Dockerfile
     image: formforge:0.0.1
     user: "10001:10001"
-    ports:
-      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
     environment:
-      EDENAI_API_KEY: ${EDENAI_API_KEY:?ustaw EDENAI_API_KEY w .env}
+      # app NIE dostaje klucza Eden – woła Eden przez gateway (nginx wstrzykuje klucz)
+      EDENAI_BASE_URL: http://gateway:8081/v3
       JWT_ISSUER: ${JWT_ISSUER:-formforge}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_UPLOAD_MB:-20}MB
@@ -36,7 +35,45 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    networks: [frontend]
+    networks: [backend]
+    depends_on:
+      gateway:
+        condition: service_started
+
+  # API Gateway: jedyny kontener z dostępem do internetu i jedyny z kluczem Eden
+  gateway:
+    image: nginxinc/nginx-unprivileged:1.31.7-alpine3.24@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
+    environment:
+      EDENAI_API_KEY: ${EDENAI_API_KEY:?ustaw EDENAI_API_KEY w .env}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid,uid=101,gid=101
+      - /etc/nginx/conf.d:size=1m,uid=101,gid=101
+    tty: false
+    stdin_open: false
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    pids_limit: 128
+    init: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    networks: [frontend, backend]
 
   # Opcjonalny lokalny LLM (docker compose --profile llm up). Obraz i wagi do dobrania
   # (przypięty tag+digest, licencja bez copyleftu) – celowo bez "ports" i w sieci internal.
@@ -55,3 +92,6 @@ networks:
   frontend: {}
   backend:
     internal: true
+    ipam:
+      config:
+        - subnet: 172.29.250.0/24
