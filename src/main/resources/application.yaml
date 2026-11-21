@@ -1,3 +1,15 @@
 spring:
   application:
     name: cyfryzacja
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+app:
+  upload:
+    max-size-bytes: 10485760
+  edenai:
+    api-key: ${EDENAI_API_KEY:}
+    chat-url: https://api.edenai.run/v3/chat/completions
+    ocr-url: https://api.edenai.run/v3/universal-ai
+    default-model: google/gemma-4-31b-it
