@@ -11,7 +11,7 @@ import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormField;
 import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormFlow;
 import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormQuestion;
 import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormTab;
-import com.hacknation.cyfryzacja.walidacja.FileValidationServiece.ValidatedFile;
+import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 
 //FTJ to znaczy file to json generator
 @Service 
