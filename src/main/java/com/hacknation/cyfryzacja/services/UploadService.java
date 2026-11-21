@@ -1,17 +1,14 @@
 package com.hacknation.cyfryzacja.services;
 
-import java.util.logging.Logger;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hacknation.cyfryzacja.parsers.DocumentParser;
 import com.hacknation.cyfryzacja.walidacja.FileValidationServiece;
+import com.hacknation.cyfryzacja.walidacja.FileValidationServiece.ValidatedFile;
 
 @Service
 public class UploadService {
-
-    private static final Logger logger = Logger.getLogger(UploadService.class.getName());
     private final FileValidationServiece fileValidationServiece;
     private final DocumentParser documentParser;
 
@@ -21,8 +18,27 @@ public class UploadService {
     }
 
     public void upload(MultipartFile file) {
-        fileValidationServiece.validate(file);
-        var parsedDocument = documentParser.parse(file);
-        logger.info(parsedDocument);
+        ValidatedFile validatedFile = fileValidationServiece.validate(file);
+
+        String mimeType = validatedFile.mimeType();
+
+        if (mimeType.startsWith("image/")) {
+            // TODO: OCR will be handled by the Eden AI/OCR service.
+            return;
+        }
+
+        switch (mimeType) {
+            case "application/pdf",
+                 "application/msword",
+                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                 "application/vnd.oasis.opendocument.spreadsheet",
+                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                 "application/x-tika-msoffice",
+                 "application/x-tika-ooxml":
+                documentParser.parse(file);
+                break;
+            default:
+                throw new IllegalArgumentException("Nieobsługiwany typ MIME: " + mimeType);
+        }
     }
 }
