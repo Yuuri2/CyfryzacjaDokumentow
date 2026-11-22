@@ -39,6 +39,7 @@ public class FileValidationService {
         )),
         Map.entry("jpg", Set.of("image/jpeg")),
         Map.entry("jpeg", Set.of("image/jpeg")),
+        Map.entry("jpe", Set.of("image/jpeg")),
         Map.entry("png", Set.of("image/png"))
     );
 

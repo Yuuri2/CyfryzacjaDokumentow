@@ -165,16 +165,14 @@
 <body>
     <div id="buttonContainer">
         <div class="uploadRow">
-            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ods,.xlsx,.jpg,.jpeg,.png">
-            <input type="password" id="jwtInput" placeholder="Token JWT" autocomplete="off"
-                   style="width: 260px; background: #0f172a; color: #f8fafc; padding: 7px 10px; border: 1px solid #475569; border-radius: 6px;">
+            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.ods,.xlsx,.jpg,.jpeg,.jpe,.png">
             <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                 <input type="checkbox" id="confirmCheck">
                 Potwierdzam wysłanie pliku
             </label>
             <button id="sendBtn" disabled>Generuj JSON</button>
         </div>
-        <div id="statusBar">Wybierz dokument lub zdjęcie formularza, potwierdź i kliknij „Generuj JSON”.</div>
+        <div id="statusBar">Wybierz jeden lub wiele dokumentów lub zdjęć formularzy, potwierdź i kliknij „Generuj JSON”.</div>
     </div>
 
     <div id="resultContainer">
@@ -195,7 +193,6 @@
         const API_URL = '/api/forms/digitize';
 
         const fileInput = document.getElementById('fileInput');
-        const jwtInput = document.getElementById('jwtInput');
         const confirmCheck = document.getElementById('confirmCheck');
         const sendBtn = document.getElementById('sendBtn');
         const statusBar = document.getElementById('statusBar');
@@ -209,13 +206,8 @@
         let tabs = [];
         let activeTabId = null;
 
-        jwtInput.value = sessionStorage.getItem('jwtToken') || '';
-        jwtInput.addEventListener('input', () => {
-            sessionStorage.setItem('jwtToken', jwtInput.value.trim());
-        });
-
         function updateSendButton() {
-            sendBtn.disabled = !(fileInput.files.length > 0 && confirmCheck.checked && jwtInput.value.trim());
+            sendBtn.disabled = !(fileInput.files.length > 0 && confirmCheck.checked);
         }
 
         fileInput.addEventListener('change', () => {
@@ -232,51 +224,54 @@
         sendBtn.addEventListener('click', async () => {
             if (fileInput.files.length === 0 || !confirmCheck.checked) return;
 
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-
             sendBtn.disabled = true;
-            statusBar.textContent = `Przetwarzanie pliku "${file.name}"...`;
+            const files = Array.from(fileInput.files);
+            let successCount = 0;
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${jwtInput.value.trim()}`
-                    },
-                    body: formData
-                });
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                statusBar.textContent = `Przetwarzanie ${i + 1}/${files.length}: "${file.name}"...`;
+                const formData = new FormData();
+                formData.append('file', file);
 
-                const rawText = await response.text();
-                let prettyText = rawText;
                 try {
-                    prettyText = JSON.stringify(JSON.parse(rawText), null, 2);
-                } catch (_) {}
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const newTab = {
-                    id: crypto.randomUUID(),
-                    fileName: file.name,
-                    jsonText: prettyText,
-                    isError: !response.ok
-                };
+                    const rawText = await response.text();
+                    let prettyText = rawText;
+                    try {
+                        prettyText = JSON.stringify(JSON.parse(rawText), null, 2);
+                    } catch (_) {}
 
-                tabs.push(newTab);
-                activeTabId = newTab.id;
-                renderTabs();
-
-                statusBar.textContent = response.ok
-                    ? `Gotowe: wygenerowano JSON dla "${file.name}".`
-                    : `Błąd HTTP ${response.status} dla pliku "${file.name}".`;
-
-                // Reset wyboru pliku po wysłaniu
-                fileInput.value = '';
-                confirmCheck.checked = false;
-            } catch (err) {
-                statusBar.textContent = `Błąd połączenia z serwerem: ${err.message}`;
-            } finally {
-                updateSendButton();
+                    const newTab = {
+                        id: crypto.randomUUID(),
+                        fileName: file.name,
+                        jsonText: prettyText,
+                        isError: !response.ok
+                    };
+                    tabs.push(newTab);
+                    activeTabId = newTab.id;
+                    if (response.ok) successCount++;
+                    renderTabs();
+                } catch (err) {
+                    tabs.push({
+                        id: crypto.randomUUID(),
+                        fileName: file.name,
+                        jsonText: `Błąd połączenia z serwerem: ${err.message}`,
+                        isError: true
+                    });
+                    activeTabId = tabs[tabs.length - 1].id;
+                    renderTabs();
+                }
             }
+
+            statusBar.textContent = `Zakończono: ${successCount}/${files.length} plików wygenerowało JSON.`;
+            fileInput.value = '';
+            confirmCheck.checked = false;
+            updateSendButton();
         });
 
         function renderTabs() {
