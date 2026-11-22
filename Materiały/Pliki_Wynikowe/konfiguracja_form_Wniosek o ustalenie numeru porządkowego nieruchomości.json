@@ -1,0 +1,275 @@
+{
+  "title": "Wniosek o ustalenie numeru porządkowego nieruchomości",
+  "tabs": [
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "title": "Dane wnioskodawcy i nieruchomości",
+      "type": "MAIN",
+      "questions": [
+        {
+          "x": 0,
+          "y": 0,
+          "rows": 2,
+          "cols": 3,
+          "field": {
+            "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            "type": "SECTION",
+            "techName": "dane_wnioskodawcy",
+            "title": "Wnioskodawca",
+            "description": "<html><head></head><body>Proszę podać dane osoby lub podmiotu składającego wniosek.</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+                  "type": "TEXT_FIELD",
+                  "techName": "imie_nazwisko_nazwa",
+                  "title": "Imię i nazwisko / nazwa wnioskodawcy",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+                  "type": "TEXT_FIELD",
+                  "techName": "adres",
+                  "title": "Adres",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+                  "type": "TEXT_FIELD",
+                  "techName": "kontakt",
+                  "title": "Nr telefonu / adres e-mail",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": "Dane nieobowiązkowe"
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 0,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "rows": 2,
+          "cols": 3,
+          "field": {
+            "id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+            "type": "SECTION",
+            "techName": "dane_nieruchomosci",
+            "title": "Dane nieruchomości",
+            "description": "<html><head></head><body>Informacje o budynkowi, dla którego wnioskowany jest numer porządkowy.</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d",
+                  "type": "TEXT_FIELD",
+                  "techName": "miejscowosc",
+                  "title": "Miejscowość",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+                  "type": "TEXT_FIELD",
+                  "techName": "ulica",
+                  "title": "Ulica",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": "Dane nieobowiązkowe"
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+                  "type": "NUMBER",
+                  "techName": "nr_ewidencyjny_dzialki",
+                  "title": "Nr ewidencyjny działki",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "d0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
+                  "type": "TEXT_FIELD",
+                  "techName": "obreb",
+                  "title": "W obrębie",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 3,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 1,
+            "tooltipMessage": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+      "title": "Zgody i podpis",
+      "type": "MAIN",
+      "questions": [
+        {
+          "x": 0,
+          "y": 0,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c",
+            "type": "CONSENT_SECTION",
+            "techName": "klauzula_informacyjna",
+            "title": "Klauzula Informacyjna",
+            "description": "<html><head></head><body>Zgodnie z art. 13 ust. 1 i 2 Rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679... Administratorem Państwa danych osobowych jest Gmina Elbląg.</body></html>",
+            "options": [],
+            "validation": [
+              "REQUIRED"
+            ],
+            "readOnly": false,
+            "repeatingSectionGrid": [],
+            "states": [],
+            "questionOrder": 0,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d",
+            "type": "FILE_UPLOADER",
+            "techName": "podpis_wnioskodawcy",
+            "title": "Podpis wnioskodawcy",
+            "description": "Podpis własnoręczny, kwalifikowany podpis elektroniczny, podpis osobisty albo podpis zaufany.",
+            "options": [],
+            "validation": [
+              "REQUIRED"
+            ],
+            "readOnly": false,
+            "repeatingSectionGrid": [],
+            "states": [],
+            "questionOrder": 1,
+            "tooltipMessage": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8e",
+      "title": "Strona końcowa",
+      "type": "FINISH",
+      "questions": []
+    }
+  ],
+  "flow": {
+    "links": [
+      {
+        "id": "28381bc8-96de-4c7e-876c-30605e097a87",
+        "source": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "target": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b"
+      },
+      {
+        "id": "4aed103f-b28b-4aa2-9e7a-3c1faaae7141",
+        "source": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+        "target": "b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8e"
+      }
+    ]
+  }
+}
