@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.JsonNode;
 
@@ -80,29 +81,95 @@ public class EdenOcrClient {
     }
 
     public String generateFormDefinition(String filename, String extractedText) {
-        String text = extractedText.length() > 30000
-                ? extractedText.substring(0, 30000)
+        String text = extractedText.length() > 60000
+                ? extractedText.substring(0, 60000)
                 : extractedText;
 
         String prompt = """
-                Przeanalizuj poniższy tekst formularza urzędowego i zwróć wyłącznie poprawny obiekt JSON
-                zgodny ze strukturą e-formularza COI.
+                Przeanalizuj poniższy formularz urzędowy i zwróć wyłącznie jeden obiekt JSON.
+                JSON musi odzwierciedlać treść formularza, a nie tylko tytuł i nazwy stron.
 
-                Wymagania:
-                - title to tytuł usługi, maksymalnie 255 znaków
-                - tabs musi mieć co najmniej dwie strony
-                - pierwsza i pozostałe strony poza FINISH mają type MAIN
-                - ostatnia strona ma type FINISH i może zawierać tylko INFO_SECTION
-                - każda strona MAIN musi mieć co najmniej jedno pole
-                - pola należy umieszczać w sekcjach SECTION
-                - typy pól: TEXT_FIELD, TEXTAREA, NUMBER, CHECKBOX, RADIO, SELECT,
-                  DATEPICKER, FILE_UPLOADER, CONSENT_SECTION, TEXT_BLOCK, INFO_SECTION, SECTION
-                - validation: REQUIRED, EMAIL, PESEL, NIP, REGON, ZIP_CODE, EPUAP,
-                  ADE, SERIAL_NUMBER_ID_CARD
-                - flow.links musi łączyć strony w kolejności ich przejścia
-                - wszystkie identyfikatory id, w tym UUID pól i stron, muszą być unikalne
+                Format wynikowy:
+                {
+                  "title": "pełny tytuł usługi",
+                  "tabs": [
+                    {
+                      "id": "UUID",
+                      "title": "tematyczna nazwa strony",
+                      "type": "MAIN",
+                      "questions": [
+                        {
+                          "x": 0,
+                          "y": 0,
+                          "rows": 2,
+                          "cols": 3,
+                          "field": {
+                            "id": "UUID",
+                            "type": "SECTION",
+                            "techName": "nazwa_sekcji_po_snake_case",
+                            "title": "Nazwa sekcji",
+                            "description": "<html><head></head><body></body></html>",
+                            "options": [],
+                            "validation": [],
+                            "readOnly": false,
+                            "repeatingSectionGrid": [
+                              {
+                                "x": 0,
+                                "y": 0,
+                                "rows": 1,
+                                "cols": 3,
+                                "field": {
+                                  "id": "UUID",
+                                  "type": "TEXT_FIELD",
+                                  "techName": "nazwisko",
+                                  "title": "Nazwisko",
+                                  "description": "",
+                                  "options": [],
+                                  "validation": ["REQUIRED"],
+                                  "readOnly": false,
+                                  "repeatingSectionGrid": [],
+                                  "states": [],
+                                  "questionOrder": 0,
+                                  "tooltipMessage": ""
+                                }
+                              }
+                            ],
+                            "states": [],
+                            "questionOrder": 0,
+                            "tooltipMessage": ""
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "UUID",
+                      "title": "Strona końcowa",
+                      "type": "FINISH",
+                      "questions": []
+                    }
+                  ],
+                  "flow": {
+                    "links": [
+                      {"id":"UUID","source":"UUID pierwszej strony","target":"UUID drugiej strony"}
+                    ]
+                  }
+                }
 
-                Zwróć tylko JSON bez bloków markdown i bez dodatkowego tekstu.
+                Wymagania szczegółowe:
+                - title nie może być pusty i może mieć maksymalnie 255 znaków.
+                - tabs musi mieć co najmniej dwie strony; ostatnia strona musi mieć type FINISH.
+                - strony MAIN muszą mieć tematyczne title i questions zawierające wszystkie sekcje, pola i dane z formularza.
+                - Każdą sekcję reprezentuj jako SECTION z polami w repeatingSectionGrid.
+                - Teksty pól, pola wyboru, checkboxy, radio, listy, daty, adresy, załączniki i obowiązkowe dane muszą zostać przeniesione do JSON.
+                - Dla pól wybieranych użyj RADIO, SELECT lub CHECKBOX i dokładnie przenieś ich opcje jako name, techName i id.
+                - Do pól tekstowych użyj TEXT_FIELD lub TEXTAREA.
+                - Do liczb użyj NUMBER, dat DATEPICKER, plików FILE_UPLOADER, zgód CONSENT_SECTION.
+                - legalne validation: REQUIRED, EMAIL, PESEL, NIP, REGON, ZIP_CODE, EPUAP, ADE, SERIAL_NUMBER_ID_CARD.
+                - flow.links musi zawierać dokładnie po jednym połączeniu z każdej strony do następnej strony.
+                - Każde id strony, pola i linku musi być unikalnym UUID.
+                - Nie pomijaj sections i nested fields.
+                - Nie zwracaj tylko title/tabs/flow. Zwróć kompletne pytania dla treści formularza.
+                - Zwróć wyłącznie poprawny JSON bez bloków markdown i bez dodatkowego tekstu.
 
                 Nazwa pliku: %s
 
@@ -120,11 +187,39 @@ public class EdenOcrClient {
                 "temperature", 0
         );
 
-        JsonNode response = client.post().uri("/chat/completions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
-                .retrieve()
-                .body(JsonNode.class);
+        JsonNode response = null;
+        RestClientResponseException lastException = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                response = client.post().uri("/chat/completions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(request)
+                        .retrieve()
+                        .body(JsonNode.class);
+                break;
+            } catch (RestClientResponseException e) {
+                lastException = e;
+                int status = e.getStatusCode().value();
+                if (status != 429 && status != 502 && status != 503 && status != 504) {
+                    throw e;
+                }
+                if (attempt < 3) {
+                    try {
+                        Thread.sleep(2000L * attempt);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Przerwano oczekiwanie na ponowienie Eden AI", interrupted);
+                    }
+                }
+            }
+        }
+        if (response == null) {
+            throw new IllegalStateException(
+                    "Eden AI chwilowo ogranicza żądania lub jest niedostępne (HTTP "
+                            + (lastException != null ? lastException.getStatusCode().value() : "brak odpowiedzi")
+                            + "). Spróbuj ponownie za chwilę.",
+                    lastException);
+        }
 
         if (response == null)
             throw new IllegalStateException("Eden AI zwróciło pustą odpowiedź");

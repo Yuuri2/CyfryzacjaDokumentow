@@ -9,6 +9,7 @@ services:
     environment:
       # app NIE dostaje klucza Eden – woła Eden przez gateway (nginx wstrzykuje klucz)
       EDENAI_BASE_URL: http://gateway:8081/v3
+      APP_EDENAI_DEFAULT_MODEL: gemma-4-31b-it
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_UPLOAD_MB:-20}MB
       SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${MAX_UPLOAD_MB:-20}MB
     read_only: true
