@@ -1,94 +1,45 @@
 package com.hacknation.cyfryzacja.services;
 
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hacknation.cyfryzacja.JSONRes.FormDefinition;
-import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FlowLink;
-import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormField;
-import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormFlow;
-import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormQuestion;
-import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormTab;
+import com.hacknation.cyfryzacja.ai.EdenOcrClient;
+import com.hacknation.cyfryzacja.parsers.DocumentParser;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-//FTJ to znaczy file to json generator
 @Service
 public class FTJGenerator {
-    public FormDefinition generate(ValidatedFile file) {
-        String mainTabId = UUID.randomUUID().toString();
-        String finishTabId = UUID.randomUUID().toString();
+    private final EdenOcrClient edenOcrClient;
+    private final DocumentParser documentParser;
+    private final ObjectMapper objectMapper;
 
-        String rawTitle = "Wniosek na podstawie " + file.filename();
-        String title = rawTitle.length() > 255 ? rawTitle.substring(0, 255) : rawTitle;
+    public FTJGenerator(EdenOcrClient edenOcrClient, DocumentParser documentParser, ObjectMapper objectMapper) {
+        this.edenOcrClient = edenOcrClient;
+        this.documentParser = documentParser;
+        this.objectMapper = objectMapper;
+    }
 
-        FormQuestion applicantNameField = new FormQuestion(
-                0, 0, 1, 1, null,
-                new FormField(
-                        UUID.randomUUID().toString(),
-                        "TEXT_FIELD",
-                        "applicant_name",
-                        "Imię",
-                        "Dane pobierane z rejestru",
-                        null,
-                        List.of("REQUIRED"),
-                        null,
-                        null,
-                        null,
-                        true,
-                        null,
-                        "MLPZ.name",
-                        "EXTERNAL_SYSTEM",
-                        null,
-                        null,
-                        1,
-                        null
-                )
+    public FormDefinition generate(ValidatedFile validatedFile, MultipartFile file) {
+        String extractedText;
+        if (validatedFile.mimeType().startsWith("image/")) {
+            extractedText = edenOcrClient.extractText(file);
+        } else {
+            extractedText = documentParser.parse(file);
+        }
+
+        String jsonText = edenOcrClient.generateFormDefinition(
+                validatedFile.filename(),
+                extractedText
         );
 
-        FormTab mainTab = new FormTab(
-                mainTabId,
-                "Dane wnioskodawcy",
-                "MAIN",
-                List.of(applicantNameField)
-        );
-
-        FormQuestion finishInfo = new FormQuestion(
-                0, 0, 1, 1, null,
-                new FormField(
-                        UUID.randomUUID().toString(),
-                        "INFO_SECTION",
-                        "summary_info",
-                        "Podsumowanie",
-                        "Przed wysłaniem sprawdź poprawność wprowadzonych danych.",
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        1,
-                        null
-                )
-        );
-
-        FormTab finishTab = new FormTab(
-                finishTabId,
-                "Podsumowanie",
-                "FINISH",
-                List.of(finishInfo)
-        );
-
-        FormFlow flow = new FormFlow(List.of(
-                new FlowLink(UUID.randomUUID().toString(), mainTabId, finishTabId)
-        ));
-
-        return new FormDefinition(title, List.of(mainTab, finishTab), flow);
+        try {
+            JsonNode root = objectMapper.readTree(jsonText);
+            return objectMapper.convertValue(root, FormDefinition.class);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("Eden AI zwróciło JSON, którego nie udało się przetworzyć", e);
+        }
     }
 }

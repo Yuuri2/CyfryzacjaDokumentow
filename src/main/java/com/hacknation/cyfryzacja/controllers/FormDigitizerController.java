@@ -27,7 +27,7 @@ public class FormDigitizerController {
     @PostMapping(value = "/digitize", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FormDefinition> digitize(@RequestParam("file") MultipartFile file) {
         ValidatedFile validatedFile = fileValidationService.validate(file);
-        FormDefinition formDefinition = ftjGenerator.generate(validatedFile);
+        FormDefinition formDefinition = ftjGenerator.generate(validatedFile, file);
         return ResponseEntity.ok(formDefinition);
     }
 }

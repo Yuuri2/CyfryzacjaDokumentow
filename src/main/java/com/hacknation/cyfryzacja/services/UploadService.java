@@ -32,26 +32,26 @@ public class UploadService {
 
         String mimeType = validatedFile.mimeType();
         String extractedText;
-        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
-
+        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg") || mimeType.equals("image/jpg")) {
             extractedText = edenOcrClient.extractText(file);
-
             logger.info("Tekst odczytany przez Eden AI:");
             logger.info(extractedText);
-        }
-
-        switch (mimeType) {
-            case "application/pdf",
-                 "application/msword",
-                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                 "application/vnd.oasis.opendocument.spreadsheet",
-                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                 "application/x-tika-msoffice",
-                 "application/x-tika-ooxml":
-                extractedText = documentParser.parse(file);
-                break;
-            default:
-                throw new IllegalArgumentException("Nieobsługiwany typ MIME: " + mimeType);
+        } else {
+            switch (mimeType) {
+                case "application/pdf",
+                     "application/msword",
+                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                     "application/vnd.oasis.opendocument.spreadsheet",
+                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     "application/x-tika-msoffice",
+                     "application/x-tika-ooxml":
+                    extractedText = documentParser.parse(file);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Nieobsługiwany typ MIME: " + mimeType);
+            }
+            logger.info("Tekst odczytany przez parser dokumentów:");
+            logger.info(extractedText);
         }
 
         logger.info("udalo sie zgrać text");

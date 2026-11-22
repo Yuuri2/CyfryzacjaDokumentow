@@ -166,6 +166,8 @@
     <div id="buttonContainer">
         <div class="uploadRow">
             <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ods,.xlsx,.jpg,.jpeg,.png">
+            <input type="password" id="jwtInput" placeholder="Token JWT" autocomplete="off"
+                   style="width: 260px; background: #0f172a; color: #f8fafc; padding: 7px 10px; border: 1px solid #475569; border-radius: 6px;">
             <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                 <input type="checkbox" id="confirmCheck">
                 Potwierdzam wysłanie pliku
@@ -193,6 +195,7 @@
         const API_URL = '/api/forms/digitize';
 
         const fileInput = document.getElementById('fileInput');
+        const jwtInput = document.getElementById('jwtInput');
         const confirmCheck = document.getElementById('confirmCheck');
         const sendBtn = document.getElementById('sendBtn');
         const statusBar = document.getElementById('statusBar');
@@ -206,8 +209,13 @@
         let tabs = [];
         let activeTabId = null;
 
+        jwtInput.value = sessionStorage.getItem('jwtToken') || '';
+        jwtInput.addEventListener('input', () => {
+            sessionStorage.setItem('jwtToken', jwtInput.value.trim());
+        });
+
         function updateSendButton() {
-            sendBtn.disabled = !(fileInput.files.length > 0 && confirmCheck.checked);
+            sendBtn.disabled = !(fileInput.files.length > 0 && confirmCheck.checked && jwtInput.value.trim());
         }
 
         fileInput.addEventListener('change', () => {
@@ -234,6 +242,9 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${jwtInput.value.trim()}`
+                    },
                     body: formData
                 });
 
