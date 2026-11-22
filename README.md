@@ -85,7 +85,6 @@ Przy uruchomieniu lokalnym OCR wymaga polecenia `tesseract` oraz danych językow
 | `AI_PROVIDER` | `eden` | `eden` lub `local`; wybiera adapter dla modelu Qwen3.5-9B. |
 | `EDENAI_API_KEY` | nieustawiony | Wymagany tylko w trybie Eden. W Compose gateway dodaje go do żądań. |
 | `EDENAI_MODEL` | `ovhcloud/Qwen3.5-9B` | Domyślny europejski endpoint OVHcloud dla Qwen3.5-9B w Eden AI. Aby wybrać inny endpoint, można ustawić np. `ionos/Qwen/Qwen3.5-9B`. |
-| `EDENAI_MAX_OUTPUT_TOKENS` | `8192` | Maksymalny rozmiar odpowiedzi modelu w trybie Eden; ogranicza niekontrolowane generowanie. |
 | `LOCAL_AI_MODEL` | `qwen3.5:9b` | Lokalny tag tego samego modelu w Ollama. |
 | `LOCAL_AI_BASE_URL` | `http://localhost:11434` | Adres lokalnego API Ollama; w lokalnym Compose należy użyć `http://ollama:11434`. |
 | `MAX_UPLOAD_MB` | `20` | Wspólny limit uploadu używany przez nginx, obsługę multipart w Springu i walidator plików. |

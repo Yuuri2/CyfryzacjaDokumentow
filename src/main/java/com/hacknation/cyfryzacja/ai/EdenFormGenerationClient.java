@@ -23,7 +23,6 @@ public class EdenFormGenerationClient implements FormGenerationClient {
     private static final Logger log = LoggerFactory.getLogger(EdenFormGenerationClient.class);
     private final RestClient client;
     private final String model;
-    private final int maxOutputTokens;
     private final DictionaryCatalog dictionaryCatalog;
     private final InitialDataCatalog initialDataCatalog;
 
@@ -31,17 +30,12 @@ public class EdenFormGenerationClient implements FormGenerationClient {
             @Value("${EDENAI_BASE_URL:https://api.edenai.run/v3}") String baseUrl,
             @Value("${EDENAI_API_KEY:}") String apiKey,
             @Value("${app.ai.eden-model:ovhcloud/Qwen3.5-9B}") String model,
-            @Value("${app.ai.eden-max-output-tokens:8192}") int maxOutputTokens,
             DictionaryCatalog dictionaryCatalog,
             InitialDataCatalog initialDataCatalog) {
         RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl);
         if (!apiKey.isBlank()) builder.defaultHeader("Authorization", "Bearer " + apiKey);
         this.client = builder.build();
         this.model = model;
-        if (maxOutputTokens < 256 || maxOutputTokens > 32768) {
-            throw new IllegalArgumentException("EDENAI_MAX_OUTPUT_TOKENS musi być w zakresie 256–32768");
-        }
-        this.maxOutputTokens = maxOutputTokens;
         this.dictionaryCatalog = dictionaryCatalog;
         this.initialDataCatalog = initialDataCatalog;
     }
@@ -63,7 +57,6 @@ public class EdenFormGenerationClient implements FormGenerationClient {
                 "model", model,
                 "messages", messages,
                 "response_format", Map.of("type", "json_object"),
-                "max_tokens", maxOutputTokens,
                 // Qwen-compatible providers do not all honor chat_template_kwargs.
                 // Send the documented direct switch as well, so OVH/Eden can disable
                 // thinking and leave the completion budget for the actual JSON.
