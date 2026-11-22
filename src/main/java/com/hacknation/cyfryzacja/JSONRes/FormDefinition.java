@@ -8,8 +8,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record FormDefinition(
         String title,
         List<FormTab> tabs,
-        FormFlow flow
+        FormFlow flow,
+        List<DictionaryProposal> dictionaryProposals
 ) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record DictionaryProposal(
+            String name,
+            String fieldTechName,
+            String structure,
+            String rationale,
+            String origin
+    ) {}
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record FormTab(
             String id,

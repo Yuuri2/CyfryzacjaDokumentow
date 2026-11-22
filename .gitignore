@@ -37,7 +37,8 @@ out/
 .vscode/
 .claude/
 CLAUDE.md
-/docs
+!/docs/
+!/docs/*.md
 
 ### Secrets ###
 .env

@@ -1,0 +1,10 @@
+[
+  {"name":"Kraje","category":"państwa","aliases":["kraj","kraje","państwo","państwa","obywatelstwo","kraj urodzenia"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"Województwo","category":"TERYT/adres","aliases":["województwo","wojewodztwo"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"Powiat","category":"TERYT/adres","aliases":["powiat"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"Gmina","category":"TERYT/adres","aliases":["gmina"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"Miejscowość","category":"TERYT/adres","aliases":["miejscowość","miejscowosc"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"Numery kierunkowe","category":"telekomunikacja","aliases":["numer kierunkowy","numery kierunkowe","prefiks telefoniczny","kod kraju telefonu"],"fieldTypes":["SELECT"],"dataOrigin":"COI_PREDEFINED","entriesIncluded":false},
+  {"name":"TERYT_DOWODOWY","category":"słownik użyty w formularzu referencyjnym","aliases":["TERYT_DOWODOWY"],"fieldTypes":["SELECT"],"dataOrigin":"REFERENCE_JSON","entriesIncluded":false},
+  {"name":"TERYT_4G_DOWODOWY","category":"słownik użyty w formularzu referencyjnym","aliases":["TERYT_4G_DOWODOWY"],"fieldTypes":["SELECT"],"dataOrigin":"REFERENCE_JSON","entriesIncluded":false}
+]

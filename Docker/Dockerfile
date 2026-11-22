@@ -16,7 +16,7 @@ RUN ./gradlew --no-daemon bootJar -x test \
 # ---- runtime ----
 FROM eclipse-temurin:25.0.5.1_2-jre-alpine-3.24@sha256:69c2a26e9894016e274c880fa542956d005b3755f84db765145185e87405bd89
 RUN apk upgrade --no-cache \
- && apk add --no-cache tesseract-ocr tesseract-ocr-data-pol \
+ && apk add --no-cache tesseract-ocr tesseract-ocr-data-pol tesseract-ocr-data-eng \
  && addgroup -g 10001 -S app \
  && adduser -u 10001 -S -G app -H -h /app -s /sbin/nologin app
 WORKDIR /app

@@ -15,21 +15,17 @@ public class FileValidationService {
     
     private static final int maxNameLength = 250;
     private static final Set<Character> forbiddenChars = Set.of(
-            ';', ':', '$', '<', '>', '/', '\\', '|', '\'', '*', '%', '?'
+            ';', ':', '$', '<', '>', '/', '\\', '|', '\'', '*', '%'
     );
 
     private static final Map<String, Set<String>> legalExtensions = Map.ofEntries(
         Map.entry("pdf", Set.of("application/pdf")),
         Map.entry("doc", Set.of(
                 "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/x-tika-msoffice",
-                "application/x-tika-ooxml"
+                "application/x-tika-msoffice"
         )),
         Map.entry("docx", Set.of(
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/msword",
-                "application/x-tika-msoffice",
                 "application/x-tika-ooxml"
         )),
         Map.entry("ods", Set.of("application/vnd.oasis.opendocument.spreadsheet")),
@@ -39,15 +35,17 @@ public class FileValidationService {
         )),
         Map.entry("jpg", Set.of("image/jpeg")),
         Map.entry("jpeg", Set.of("image/jpeg")),
-        Map.entry("jpe", Set.of("image/jpeg")),
         Map.entry("png", Set.of("image/png"))
     );
 
     private final Tika tika = new Tika();
-    private final long maxFileSize;
+    private final long maxFileSizeBytes;
 
-    public FileValidationService(@Value("${app.upload.max-size-bytes:10485760}") long maxFileSize) {
-        this.maxFileSize = maxFileSize;
+    public FileValidationService(@Value("${app.upload.max-size-mb:20}") long maxUploadMb) {
+        if (maxUploadMb < 1 || maxUploadMb > Long.MAX_VALUE / (1024 * 1024)) {
+            throw new IllegalArgumentException("MAX_UPLOAD_MB musi być dodatnią liczbą całkowitą");
+        }
+        this.maxFileSizeBytes = Math.multiplyExact(maxUploadMb, 1024L * 1024L);
     }
     //tutaj dodajemy zabezpieczenia przed błędnymi plikami.
     public ValidatedFile validate(MultipartFile file) {
@@ -66,7 +64,7 @@ public class FileValidationService {
                 throw new IllegalArgumentException("Nazwa pliku zawiera niedozwolone znaki");
             }
         }
-        if(file.getSize() > maxFileSize){
+        if(file.getSize() > maxFileSizeBytes){
             throw new IllegalArgumentException("Plik jest za duży");
         }
         String extension = extractExtension(originalFilename);

@@ -3,15 +3,16 @@ spring:
     name: cyfryzacja
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: ${MAX_UPLOAD_MB:20}MB
+      max-request-size: ${MAX_UPLOAD_MB:20}MB
 app:
   upload:
-    max-size-bytes: 10485760
-  edenai:
-    chat-url: https://api.edenai.run/v3/chat/completions
-    ocr-url: https://api.edenai.run/v3/universal-ai
-    default-model: gemma-4-31b-it
+    max-size-mb: ${MAX_UPLOAD_MB:20}
+  ai:
+    provider: ${AI_PROVIDER:eden}
+    eden-model: ${EDENAI_MODEL:ionos/Qwen/Qwen3.5-9B}
+    local-model: ${LOCAL_AI_MODEL:qwen3.5:9b}
+    local-base-url: ${LOCAL_AI_BASE_URL:http://localhost:11434}
   jwt:
     secret: ${JWT_SECRET:public-formforge-local-secret-32chars}
     issuer: ${JWT_ISSUER:formforge}

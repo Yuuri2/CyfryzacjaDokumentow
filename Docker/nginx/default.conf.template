@@ -84,8 +84,8 @@ server {
     resolver 127.0.0.11 valid=30s ipv6=off;
     set $eden "api.edenai.run";
 
-    # Allowlista: wyłącznie endpointy używane przez EdenOcrClient
-    location ~ ^/v3/(upload|universal-ai|chat/completions)$ {
+# Allowlista: wyłącznie endpoint generowania JSON; OCR działa lokalnie
+    location = /v3/chat/completions {
         limit_except POST { deny all; }
         proxy_pass https://$eden;
         proxy_http_version 1.1;

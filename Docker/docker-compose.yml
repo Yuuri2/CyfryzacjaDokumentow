@@ -7,11 +7,12 @@ services:
     image: formforge:0.0.1
     user: "10001:10001"
     environment:
-      # app NIE dostaje klucza Eden – woła Eden przez gateway (nginx wstrzykuje klucz)
+      # Wybierz eden albo local. W obu trybach model to Qwen3.5-9B.
+      AI_PROVIDER: ${AI_PROVIDER:-eden}
+      EDENAI_MODEL: ${EDENAI_MODEL:-ionos/Qwen/Qwen3.5-9B}
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-qwen3.5:9b}
       EDENAI_BASE_URL: http://gateway:8081/v3
-      APP_EDENAI_DEFAULT_MODEL: gemma-4-31b-it
-      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_UPLOAD_MB:-20}MB
-      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${MAX_UPLOAD_MB:-20}MB
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
     read_only: true
     tmpfs:
       - /tmp:size=256m,noexec,nosuid,uid=10001,gid=10001
@@ -45,7 +46,7 @@ services:
     ports:
       - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
     environment:
-      EDENAI_API_KEY: ${EDENAI_API_KEY:?ustaw EDENAI_API_KEY w .env}
+      EDENAI_API_KEY: ${EDENAI_API_KEY:-}
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
     volumes:
       - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
@@ -73,19 +74,6 @@ services:
       timeout: 3s
       retries: 3
     networks: [frontend, backend]
-
-  # Opcjonalny lokalny LLM (docker compose --profile llm up). Obraz i wagi do dobrania
-  # (przypięty tag+digest, licencja bez copyleftu) – celowo bez "ports" i w sieci internal.
-  # llm:
-  #   image: <obraz>@sha256:<digest>
-  #   profiles: [llm]
-  #   tty: false
-  #   stdin_open: false
-  #   cap_drop: [ALL]
-  #   logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
-  #   security_opt: ["no-new-privileges:true"]
-  #   read_only: true
-  #   networks: [backend]
 
 networks:
   frontend: {}

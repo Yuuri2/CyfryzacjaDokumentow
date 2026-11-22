@@ -1,157 +1,139 @@
-# e-skw – cyfryzacja formularzy urzędowych
+# e-skw — cyfryzacja formularzy urzędowych
 
-Usługa REST przyjmująca blankiety formularzy (PDF, DOC, DOCX, ODS, XLSX, JPG, JPEG, JPE, PNG) i zwracająca **JSON konfiguracji e-formularza** (`title`, `tabs`, `flow`) w strukturze oczekiwanej przez Generator Formularzy COI. Projekt powstał na hackathon HackNation 2026 (zadanie COI „Cyfryzacja formularzy”). Strona główna i endpointy API są publiczne i nie wymagają tokenu JWT.
+REST API przyjmuje pojedynczy blankiet i zwraca JSON konfiguracji formularza dla Generatora Formularzy COI. Obsługiwane rozszerzenia: PDF, DOC, DOCX, ODS, XLSX, JPG, JPEG i PNG. Projekt powstał w ramach wyzwania HackNation 2026 „Cyfryzacja formularzy”.
 
-Architekturę opisuje [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md), a założenia i decyzje projektowe [`docs/PROJEKT.md`](docs/PROJEKT.md) i [`docs/PLAN.md`](docs/PLAN.md).
+## Stan rozwiązania
 
-## Stan implementacji
-
-| Element | Stan |
-|---|---|
-| Walidacja pliku (rozszerzenie, MIME wg treści, nazwa ≤ 250 znaków i zakazane znaki, rozmiar) | gotowe |
-| Docker: aplikacja + nginx jako API Gateway, hardening | gotowe |
-| Klient Eden AI (upload + OCR) za gatewayem | gotowy, jeszcze niepodpięty do potoku |
-| `POST /api/forms/digitize` zwraca `FormDefinition` | **wersja szkieletowa**: zwraca stały, przykładowy formularz (nie analizuje jeszcze treści pliku) |
-| Ekstrakcja → FormSpec → kompilator → walidator reguł COI | w budowie |
-| Dostęp publiczny bez tokena JWT | gotowe |
-| Słowniki, `states`, frontend, wizualizator | zaplanowane |
+- Walidacja rozszerzenia, MIME wykrytego z zawartości, nazwy pliku i limitu rozmiaru.
+- Ekstrakcja tekstu z dokumentów przez Apache Tika; OCR obrazów i skanowanych PDF-ów przez Tesseract z językami polskim i angielskim.
+- Generowanie pełnej konfiguracji formularza z treści dokumentu. Brakujące pola nie są uzupełniane pustymi wartościami.
+- Walidacja wyniku względem schematu importu COI oraz reguł semantycznych przed odpowiedzią API.
+- Wykrywanie słowników referencyjnych z materiałów COI, propozycje nowych słowników i walidacja warunków widoczności pól.
+- Endpoint katalogu słowników oraz endpoint zbiorczego przetwarzania do 10 plików w jednym żądaniu.
+- Docker Compose uruchamia aplikację i nginx API Gateway.
+- Generowanie korzysta z modelu Qwen3.5-9B. Można wybrać przypięty endpoint Eden AI (`ionos/Qwen/Qwen3.5-9B`) albo lokalne Ollama (`qwen3.5:9b`).
+- OCR działa lokalnie przez Tesseract; aplikacja nie korzysta z zewnętrznego API OCR.
+- W obu trybach OCR odbywa się lokalnie. Tryb `local` wysyła ekstrakt wyłącznie do Ollama w tej samej sieci Docker; tryb `eden` wysyła ekstrakt do Eden AI.
 
 ## Wymagania
 
-- Docker z Docker Compose v2.
-- Klucz API Eden AI (`EDENAI_API_KEY`).
-- JWT nie jest wymagany do pracy z aplikacją ani stroną.
-- Wszystkie endpointy formularza i strony głównej są dostępne bez nagłówka `Authorization`.
-- Do pracy bez Dockera: JDK 25 (Gradle wrapper jest w repo).
+- Docker Desktop z Docker Compose v2 albo JDK 25 do uruchomienia poza Dockerem.
+- Klucz Eden AI (`EDENAI_API_KEY`) tylko dla trybu `AI_PROVIDER=eden`.
+- Dla trybu lokalnego: Docker Compose i ok. 16 GB pamięci RAM. Wagi `qwen3.5:9b` Q4 zajmują ok. 6,6 GB; GPU z ok. 8 GB VRAM przyspiesza działanie, ale model może działać na CPU.
+- Tesseract z pakietami językowymi `pol` i `eng` przy uruchomieniu poza Dockerem. Obraz aplikacji zawiera te pakiety.
+- Schemat importu COI znajduje się w `src/main/resources/coi-form-schema.json`.
 
-## Budowanie i uruchomienie (Docker)
+## Uruchomienie przez Docker
 
-1. Skonfiguruj środowisko:
+W katalogu repozytorium skopiuj wzór konfiguracji do `.env`. Tryb domyślny używa Eden AI, więc w tym trybie wpisz `EDENAI_API_KEY`:
 
-   ```bash
-   cp .env.example .env
-   # uzupełnij EDENAI_API_KEY w .env (plik .env nie jest śledzony przez git)
-   ```
-
-2. Zbuduj obraz i uruchom z korzenia repozytorium:
-
-   ```bash
-   docker compose --env-file .env -f Docker/docker-compose.yml up -d --build
-   ```
-
-3. Sprawdź, czy działa:
-
-   ```bash
-   docker compose -f Docker/docker-compose.yml ps     # gateway i app w stanie Up
-   curl -i http://localhost:8080/health               # 200 ok
-   ```
-
-4. Zatrzymanie: `docker compose -f Docker/docker-compose.yml down`.
-
-Po zmianie `EDENAI_API_KEY` odtwórz gateway (klucz jest czytany tylko przy starcie):
-`docker compose --env-file .env -f Docker/docker-compose.yml up -d --force-recreate gateway`.
-
-### Uruchomienie lokalne (bez Dockera)
-
-```bash
-export EDENAI_API_KEY=...        # w tym trybie aplikacja woła Eden bezpośrednio
-./gradlew bootRun
+```powershell
+Copy-Item .env.example .env
+notepad .env
+docker compose --env-file .env -f Docker/docker-compose.yml up -d --build
+docker compose -f Docker/docker-compose.yml ps
+Invoke-WebRequest http://localhost:8080/health
 ```
 
-Testy: `./gradlew test` (uwaga: `EdenConnectionTest` łączy się z zewnętrznym API Eden i wymaga klucza).
+Interfejs jest dostępny pod `http://localhost:8080/`. Zatrzymanie:
+
+```powershell
+docker compose -f Docker/docker-compose.yml down
+```
+
+Compose buduje warstwowy obraz aplikacji z przypiętej wersji JDK/JRE, uruchamia ją jako użytkownik nie-root i montuje katalog tymczasowy jako `tmpfs`. Port aplikacji nie jest publikowany bezpośrednio na hoście; dostęp prowadzi przez nginx.
+
+### Tryb lokalny Ollama
+
+Ustaw w `.env` `AI_PROVIDER=local`, a następnie uruchom zestaw z plikiem lokalnym:
+
+```powershell
+docker compose --env-file .env -f Docker/docker-compose.yml -f Docker/docker-compose.local.yml up -d --build
+docker compose --env-file .env -f Docker/docker-compose.yml -f Docker/docker-compose.local.yml exec ollama ollama pull qwen3.5:9b
+```
+
+Ollama udostępnia API tylko wewnątrz sieci Docker; port 11434 nie jest publikowany na hoście. Wagi są pobierane raz do woluminu `ollama-models`. `OLLAMA_NO_CLOUD=1` wyłącza funkcje chmurowe. Aplikacja w trybie lokalnym wybiera wyłącznie adapter Ollama i nie wywołuje Eden AI. Sieć `ollama-egress` służy do pobrania obrazu i wag; można ją odłączyć po pobraniu, jeśli środowisko wymaga całkowitej blokady ruchu wychodzącego.
+
+Zatrzymanie lokalnego zestawu:
+
+```powershell
+docker compose --env-file .env -f Docker/docker-compose.yml -f Docker/docker-compose.local.yml down
+```
+
+## Uruchomienie lokalne
+
+Tryb lokalny wymaga działającego Ollama z pobranym modelem `qwen3.5:9b`. Ustaw:
+
+```powershell
+$env:AI_PROVIDER = "local"
+$env:LOCAL_AI_BASE_URL = "http://localhost:11434"
+$env:LOCAL_AI_MODEL = "qwen3.5:9b"
+$env:MAX_UPLOAD_MB = "20"
+.\gradlew.bat bootRun
+```
+
+Przy uruchomieniu lokalnym OCR wymaga dostępnego polecenia `tesseract` oraz danych `pol` i `eng`. Aplikacja nie zapisuje uploadów jako trwałych plików; pracuje na bajtach w pamięci, a Tika używa katalogu tymczasowego systemu.
 
 ## Konfiguracja
 
-Zmienne środowiskowe (plik `.env`, wzór w `.env.example`):
+| Zmienna | Domyślnie | Znaczenie |
+|---|---:|---|
+| `AI_PROVIDER` | `eden` | `eden` lub `local`; wybiera adapter dla tego samego modelu Qwen3.5-9B. |
+| `EDENAI_API_KEY` | brak | Klucz wymagany tylko w trybie Eden. W Compose trafia do gatewaya, który dodaje go do żądań. |
+| `EDENAI_MODEL` | `ionos/Qwen/Qwen3.5-9B` | Przypięty europejski endpoint Qwen3.5-9B w Eden AI. |
+| `LOCAL_AI_MODEL` | `qwen3.5:9b` | Lokalny tag tego samego modelu w Ollama. |
+| `LOCAL_AI_BASE_URL` | `http://localhost:11434` | Adres lokalnego API Ollama; w lokalnym Compose to `http://ollama:11434`. |
+| `MAX_UPLOAD_MB` | `20` | Jeden limit używany przez nginx, Spring multipart i walidator pliku. |
+| `APP_BIND` | `127.0.0.1` | Adres hosta, na którym nginx publikuje port. |
+| `APP_PORT` | `8080` | Port nginx na hoście. |
+| `EDENAI_BASE_URL` | `https://api.edenai.run/v3` | Bazowy adres Eden AI, używany tylko w trybie Eden poza Compose. |
 
-| Zmienna | Domyślnie | Opis |
-|---|---|---|
-| `EDENAI_API_KEY` | – (wymagana) | Klucz Eden AI. Trafia **wyłącznie** do kontenera `gateway`; kontener `app` go nie widzi. |
-| `MAX_UPLOAD_MB` | `20` | Maksymalny rozmiar pliku. Egzekwowany w nginx (413) i w aplikacji (`spring.servlet.multipart.*`). |
-| `APP_BIND` | `127.0.0.1` | Interfejs, na którym publikowany jest port. Dla dostępu z sieci ustaw `0.0.0.0`. |
-| `APP_PORT` | `8080` | Port na hoście. |
-
-Parametry aplikacji w `src/main/resources/application.yaml`: `app.upload.max-size-bytes` (limit rozmiaru sprawdzany w `FileValidationService`), adresy i model Eden (`app.edenai.*`). W kontenerze adres bazowy Eden to `EDENAI_BASE_URL=http://gateway:8081/v3` (ustawiany w `docker-compose.yml`).
-
-## Uwierzytelnianie
-
-Aplikacja nie wymaga uwierzytelnienia ani tokena. Strona główna, `/api/forms/digitize`, `/upload` i `/health` są publiczne.
+Wartości limitu pliku w aplikacji i gatewayu pochodzą z tej samej zmiennej `MAX_UPLOAD_MB`.
 
 ## REST API
 
-Wszystkie wywołania idą przez gateway: `http://localhost:8080`.
-
 ### `POST /api/forms/digitize`
 
-Przyjmuje jeden plik formularza i zwraca JSON konfiguracji e-formularza.
+Przyjmuje jeden plik jako `multipart/form-data`, pole `file`:
 
-```bash
-curl -X POST -F "file=@Wniosek.pdf" http://localhost:8080/api/forms/digitize
+```powershell
+curl.exe -X POST -F "file=@Wniosek.pdf" http://localhost:8080/api/forms/digitize
 ```
 
-- Body: `multipart/form-data`, pole `file`.
-- Odpowiedź `200`: `application/json`:
-
-  ```json
-  {
-    "title": "…",
-    "tabs": [
-      { "id": "uuid", "title": "…", "type": "MAIN|FINISH",
-        "questions": [ { "x": 0, "y": 0, "rows": 1, "cols": 1, "field": { "id": "uuid", "type": "TEXT_FIELD", "techName": "…", "title": "…", "validation": ["REQUIRED"] } } ] }
-    ],
-    "flow": { "links": [ { "id": "uuid", "source": "<tab id>", "target": "<tab id>" } ] }
-  }
-  ```
-
-  Pola o wartości `null` są pomijane. Obecnie odpowiedź jest **szkieletowa** (patrz „Stan implementacji”).
-
-### `PUT /upload`
-
-Waliduje i parsuje plik (multipart, pole `file`); zwraca `200` bez treści. Endpoint pomocniczy do testów walidacji uploadu.
-
-```bash
-curl -X PUT -F "file=@Wniosek.pdf" http://localhost:8080/upload
-```
+Sukces zwraca `200 application/json` z `title`, `tabs` i `flow`. Niepoprawny upload zwraca `400`; nieczytelny dokument lub wynik, który nie przechodzi walidacji COI, zwraca `422` z opisem błędu, a dla niepoprawnego JSON-a także listą naruszeń. Niedostępność Eden AI zwraca `503`.
 
 ### `GET /health`
 
-Odpowiada `200 ok` (obsługiwane przez gateway, bez tokenu).
+Gateway odpowiada `200 ok`.
 
-### Walidacja pliku
+### `GET /api/forms/dictionaries`
 
-Plik jest odrzucany, gdy: jest pusty, nie ma nazwy lub rozszerzenia, nazwa ma więcej niż 250 znaków albo zawiera którykolwiek ze znaków `; : > < / \ | ' * % $ ?`, rozmiar przekracza limit, rozszerzenie nie należy do `pdf, doc, docx, ods, xlsx, jpg, jpeg, jpe, png`, a typ MIME wykryty (Tika) z treści nie zgadza się z rozszerzeniem. Limity gatewaya: 20 MB (`MAX_UPLOAD_MB`) → `413`, ~10 żądań/s na IP (burst 20) → `429`.
+Zwraca katalog nazw słowników znalezionych w dostarczonych konfiguracjach referencyjnych. Materiały zawierają odwołania do `Kraje`, `TERYT_DOWODOWY` i `TERYT_4G_DOWODOWY`, ale nie zawierają rekordów tych słowników; odpowiedź oznacza to przez `entriesAvailable: false`.
 
-Uwaga: przy odrzuconym pliku aplikacja na razie zwraca ogólny błąd serwera (500) zamiast 4xx.
+### `POST /api/forms/digitize/batch`
 
-## Bezpieczeństwo kontenerów
+Przyjmuje wiele plików pod powtarzanym parametrem multipart `files` (maksymalnie 10). Zwraca `207 Multi-Status` z osobnym wynikiem lub błędem dla każdego pliku. Całe żądanie nadal podlega wspólnemu limitowi rozmiaru ustawionemu przez `MAX_UPLOAD_MB`.
 
-- Obrazy oficjalne, lekkie (Alpine 3.24), z **przypiętymi tagami i digestami** (bez `latest`).
-- Procesy działają jako użytkownicy nie-root (aplikacja `10001`, nginx `101`), `cap_drop: ALL`, `no-new-privileges`, system plików tylko do odczytu, `/tmp` w pamięci (`tmpfs`, `noexec`) – pliki użytkowników nie są zapisywane trwale.
-- Na hoście publikowany jest wyłącznie port 8080 gatewaya (domyślnie tylko `127.0.0.1`).
-- Kontener `app` jest w sieci `internal` (bez dostępu do internetu). Do Eden AI wychodzi tylko nginx, z allowlistą trzech endpointów (`POST /v3/upload`, `/v3/universal-ai`, `/v3/chat/completions`), a port wewnętrzny 8081 jest dostępny tylko z podsieci `backend`.
-- Sekrety (`EDENAI_API_KEY`) wyłącznie ze zmiennych środowiskowych w runtime; limity logów (3 × 10 MB).
+### Walidacja wejścia
 
-## Skrypty testowe
+Akceptowane rozszerzenia to `.pdf`, `.doc`, `.docx`, `.ods`, `.xlsx`, `.jpg`, `.jpeg` i `.png`. Rozszerzenie musi zgadzać się z MIME rozpoznanym na podstawie zawartości. Nazwa może mieć maksymalnie 250 znaków i nie może zawierać `; : > < / \\ | ' * % $`. Rozmiar jest ograniczony przez `MAX_UPLOAD_MB`.
 
-Skrypty w katalogu `scripts/` służą do pomocniczych testów; obecna aplikacja nie wymaga ustawienia lub przekazywania tokena JWT.
+## Przetwarzanie i walidacja JSON
 
-## Struktura repozytorium
+`FileValidationService` waliduje upload i zachowuje zawartość w pamięci. `DocumentParser` używa parsera autodetekcji Apache Tika dla wszystkich obsługiwanych formatów. Konfiguracja PDF uruchamia ekstrakcję tekstu oraz OCR; obrazy są obsługiwane przez parser Tesseract Tika. Języki OCR to polski i angielski.
 
-```
-src/main/java/com/hacknation/cyfryzacja/
-  security/      SecurityConfig – publiczny dostęp do aplikacji
-  controllers/   FormDigitizerController (POST /api/forms/digitize), UploadController (PUT /upload)
-  walidacja/     FileValidationService – walidacja pliku
-  parsers/       DocumentParser (Tika) – ekstrakcja tekstu
-  ai/            EdenOcrClient – klient Eden AI (upload + OCR)
-  services/      UploadService, FTJGenerator (generator formularza)
-  JSONRes/       FormDefinition – model docelowego JSON-a
-Docker/          Dockerfile, docker-compose.yml, nginx/default.conf.template (API Gateway)
-scripts/         pomocnicze skrypty testowe i narzędziowe
-docs/            PROJEKT.md, PLAN.md, ARCHITEKTURA.md
-Materiały/       materiały konkursowe (zadanie, regulamin, formularze)
-```
+`FormGenerationPrompt` jest wspólny dla obu adapterów, więc Eden AI i Ollama dostają tę samą treść instrukcji. `EdenFormGenerationClient` wysyła ekstrakt do Qwen3.5-9B przez Eden AI; `LocalQwenFormGenerationClient` używa lokalnego Ollama z tagiem Qwen3.5-9B. Tekst dłuższy niż 60 000 znaków jest jawnie odrzucany, zamiast obcinania i ryzyka utraty pól. `JSONRuleValidator` sprawdza typy zgodnie z dołączonym schematem COI, kompletność i unikalność identyfikatorów, strony, pola, opcje, walidacje, dozwolone walidatory oraz stany `SHOW`/`READ_ONLY`. Odrzuca też niekompletność zgłoszoną przez model. Walidator danych inicjalnych dodatkowo sprawdza `SOURCE.attribute`, zgodność typu pola i `readOnly=true`.
 
-## Licencje i ograniczenia
+`dictionary-catalog.json` jest inicjalizowany z nazw słowników występujących w przykładowych konfiguracjach konkursowych. Dostępna jest identyfikacja nazw oraz przypisanie `dictionaryName`; same materiały nie dostarczają wartości słownikowych, więc katalog jawnie oznacza brak rekordów. Nieznane nazwy trafiają do osobnego `dictionaryProposals` z nazwą, polem, strukturą i uzasadnieniem; propozycje są oznaczone jako `generated-proposal` i wymagają zatwierdzenia oraz uzupełnienia źródła danych.
 
-Rozwiązanie ma opierać się wyłącznie na bibliotekach open source bez licencji copyleft (wymóg zadania); audyt zależności (w tym `tika-parsers-standard-package`) jest jeszcze do wykonania. Eden AI jest używane jako zewnętrzny model zgodnie z ustaleniem z mentorem COI.
+Format COI opisuje walidatory jako listę kodów i nie udostępnia w dołączonym schemacie parametrów dla ogólnych `minLength`/`maxLength`. Aplikacja nie dodaje więc takich nieobsługiwanych pól ani nie wymyśla składni parametrów. Warunki `states` obsługują widoczność i tryb tylko do odczytu pól; schemat `flow.links` nie zawiera warunku przejścia, więc nawigacja stron pozostaje zgodna z grafem przejść bez warunków.
+
+Schemat wejściowy organizatora zawiera historyczną literówkę `repetingSectionGrid`; reguły aplikacji dodatkowo sprawdzają poprawną nazwę `repeatingSectionGrid` używaną w przykładowych konfiguracjach i modelu API.
+
+## Dokumentacja i licencje
+
+- [Architektura](docs/ARCHITEKTURA.md)
+- [Opis projektu](docs/PROJEKT.md)
+- [Plan i ograniczenia](docs/PLAN.md)
+
+Qwen3.5-9B jest publikowany na [Apache-2.0](https://huggingface.co/Qwen/Qwen3.5-9B). Lokalny tag `qwen3.5:9b` używa kwantyzacji Q4 z oficjalnego checkpointu; ze względu na kwantyzację i różnice serwera inferencji wyniki nie będą bitowo identyczne z Eden. Eden AI jest przypięte do europejskiego endpointu `ionos/Qwen/Qwen3.5-9B`, a nie do dynamicznego routingu. [Ollama](https://github.com/ollama/ollama/blob/main/LICENSE) jest na licencji MIT, [Tesseract](https://github.com/tesseract-ocr/tesseract/blob/main/LICENSE) na Apache-2.0, a Apache Tika na Apache-2.0. Zależności tranzytywne i obrazy bazowe nadal wymagają pełnego audytu przed dystrybucją. W trybie lokalnym model nie wysyła danych do Eden AI; wagi pobierane są z rejestru Ollama podczas konfiguracji.
