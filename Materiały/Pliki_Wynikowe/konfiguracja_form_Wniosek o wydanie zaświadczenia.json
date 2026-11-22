@@ -1,0 +1,291 @@
+{
+  "title": "Wniosek o wydanie zaświadczenia - Urząd Miasta i Gminy Młynary",
+  "tabs": [
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "title": "Dane wnioskodawcy i przedmiot wniosku",
+      "type": "MAIN",
+      "questions": [
+        {
+          "x": 0,
+          "y": 0,
+          "rows": 2,
+          "cols": 3,
+          "field": {
+            "id": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+            "type": "SECTION",
+            "techName": "dane_wnioskodawcy",
+            "title": "Dane wnioskodawcy",
+            "description": "<html><head></head><body>Proszę podać aktualne dane kontaktowe i identyfikacyjne.</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f",
+                  "type": "TEXT_FIELD",
+                  "techName": "imie_nazwisko",
+                  "title": "Imię i nazwisko",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "d1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
+                  "type": "TEXT_FIELD",
+                  "techName": "adres",
+                  "title": "Adres",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+                  "type": "TEXT_FIELD",
+                  "techName": "pesel",
+                  "title": "PESEL",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED",
+                    "PESEL"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+                  "type": "TEXT_FIELD",
+                  "techName": "numer_telefonu",
+                  "title": "Nr telefonu",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 3,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "a2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+                  "type": "DATEPICKER",
+                  "techName": "data_wniosku",
+                  "title": "Data złożenia wniosku",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 4,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 0,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "rows": 2,
+          "cols": 3,
+          "field": {
+            "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            "type": "SECTION",
+            "techName": "przedmiot_wniosku",
+            "title": "Przedmiot wniosku",
+            "description": "<html><head></head><body>Proszę wskazać rodzaj zaświadczenia, o które Pan/Pani wnioskuje.</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+                  "type": "CHECKBOX",
+                  "techName": "rodzaj_zaswiadczenia",
+                  "title": "Proszę o wydanie zaświadczenia o:*",
+                  "description": "",
+                  "options": [
+                    {
+                      "id": "opt1",
+                      "name": "ilości posiadanych użytków rolnych w hektarach fizycznych i przeliczeniowych",
+                      "techName": "posiadane_uzytki"
+                    },
+                    {
+                      "id": "opt2",
+                      "name": "ilości dzierżawionych użytków rolnych w hektarach fizycznych i przeliczeniowych",
+                      "techName": "dzierzawione_uzytki"
+                    },
+                    {
+                      "id": "opt3",
+                      "name": "okresie posiadania gospodarstwa rolnego",
+                      "techName": "okres_posiadania"
+                    },
+                    {
+                      "id": "opt4",
+                      "name": "nieposiadaniu użytków rolnych / gospodarstwa rolnego na terenie Gminy Młynary",
+                      "techName": "nieposiadanie_uzytkow"
+                    },
+                    {
+                      "id": "opt5",
+                      "name": "inne",
+                      "techName": "inne_zaswiadczenie"
+                    }
+                  ],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a",
+                  "type": "TEXTAREA",
+                  "techName": "inne_opis",
+                  "title": "Opis innego zaświadczenia",
+                  "description": "Wypełnij, jeśli zaznaczyłeś opcję 'inne'",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "e2f3a4b5-c6d7-4e8f-9a0b-1c2d3e4f5a6b",
+                  "type": "TEXT_FIELD",
+                  "techName": "cel_zaswiadczenia",
+                  "title": "Zaświadczenie potrzebne jest celem przedłożenia w",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 1,
+            "tooltipMessage": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c",
+      "title": "Informacje i Podsumowanie",
+      "type": "FINISH",
+      "questions": [
+        {
+          "x": 0,
+          "y": 0,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d",
+            "type": "CONSENT_SECTION",
+            "techName": "informacje_oplaty",
+            "title": "Informacje o opłacie skarbowej",
+            "description": "<html><head></head><body>1. Opłata za wydanie zaświadczenia wynosi 17 zł (od każdego egzemplarza). Obowiązek uiszczenia opłaty skarbowej powstaje z chwilą złożenia wniosku o wydanie zaświadczenia.<br>2. Opłatę skarbową należy wnieść w kasie lub bezgotówkowo na rachunek tut. Urzędu – przed złożeniem wniosku. Konto bankowe Urzędu: Bank PKO BP S.A. 12 1234 1234 1234 1234 1234 1234.<br>3. Zwolnienie z opłaty skarbowej określa art. 2, natomiast wyłączenie art. 7 ustawy z dnia 16 listopada 2006 r. o opłacie skarbowej.</body></html>",
+            "options": [],
+            "validation": [
+              "REQUIRED"
+            ],
+            "readOnly": false,
+            "repeatingSectionGrid": [],
+            "states": [],
+            "questionOrder": 0,
+            "tooltipMessage": ""
+          }
+        }
+      ]
+    }
+  ],
+  "flow": {
+    "links": [
+      {
+        "id": "f84e45f0-bd2b-4086-bea2-3abfe7d1a53b",
+        "source": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "target": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c"
+      }
+    ]
+  }
+}

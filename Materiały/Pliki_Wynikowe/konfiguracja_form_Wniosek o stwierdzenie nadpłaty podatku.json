@@ -1,0 +1,376 @@
+{
+  "title": "Wniosek o stwierdzenie nadpłaty podatku",
+  "tabs": [
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "title": "Dane wnioskodawcy i treść wniosku",
+      "type": "MAIN",
+      "questions": [
+        {
+          "x": 0,
+          "y": 0,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+            "type": "SECTION",
+            "techName": "dane_wnioskodawcy",
+            "title": "Wnioskodawca",
+            "description": "<html><body>Dane identyfikacyjne osoby lub firmy składającej wniosek</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f",
+                  "type": "TEXT_FIELD",
+                  "techName": "nazwa_imie",
+                  "title": "Nazwisko i imię/Nazwa firmy",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "d1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
+                  "type": "TEXT_FIELD",
+                  "techName": "adres",
+                  "title": "Adres zamieszkania/siedziba firmy",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+                  "type": "TEXT_FIELD",
+                  "techName": "pesel",
+                  "title": "PESEL",
+                  "description": "Numer PESEL wpisują podatnicy będący osobami fizycznymi objętymi rejestrem PESEL nieprowadzący działalności gospodarczej.",
+                  "options": [],
+                  "validation": [
+                    "PESEL"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+                  "type": "TEXT_FIELD",
+                  "techName": "nip",
+                  "title": "NIP",
+                  "description": "Identyfikator podatkowy NIP wpisują pozostali podatnicy.",
+                  "options": [],
+                  "validation": [
+                    "NIP"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 3,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 0,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "g1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5d",
+            "type": "SECTION",
+            "techName": "tresc_wniosku",
+            "title": "Wniosek o stwierdzenie nadpłaty",
+            "description": "<html><body>Na podstawie art. 75 ustawy z dnia 29 sierpnia 1997 r. - Ordynacja podatkowa (Dz. U. z 2025 r. poz. 111 ze zm.)</body></html>",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "h1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5e",
+                  "type": "TEXT_FIELD",
+                  "techName": "rodzaj_podatku",
+                  "title": "Rodzaj podatku",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "i1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5f",
+                  "type": "NUMBER",
+                  "techName": "kwota_nadplaty",
+                  "title": "Kwota nadpłaty",
+                  "description": "",
+                  "options": [],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "j1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b60",
+                  "type": "TEXTAREA",
+                  "techName": "uzasadnienie",
+                  "title": "Uzasadnienie",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 1,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "k1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b61",
+            "type": "SECTION",
+            "techName": "dyspozycja_kwota",
+            "title": "Dyspozycja kwotą nadpłaty",
+            "description": "",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "l1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b62",
+                  "type": "RADIO",
+                  "techName": "sposob_rozliczenia",
+                  "title": "Kwotę nadpłaty proszę:",
+                  "description": "",
+                  "options": [
+                    {
+                      "id": "opt1",
+                      "name": "Zaliczyć na poczet przyszłego zobowiązania podatkowego",
+                      "techName": "zaliczenie"
+                    },
+                    {
+                      "id": "opt2",
+                      "name": "Zwrócić przelewem na wskazany rachunek",
+                      "techName": "zwrot"
+                    }
+                  ],
+                  "validation": [
+                    "REQUIRED"
+                  ],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "m1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b63",
+                  "type": "TEXT_FIELD",
+                  "techName": "numer_rachunku",
+                  "title": "Numer rachunku bankowego",
+                  "description": "Wypełnić w przypadku wyboru zwrotu przelewem",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 2,
+            "tooltipMessage": ""
+          }
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "rows": 1,
+          "cols": 3,
+          "field": {
+            "id": "n1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b64",
+            "type": "SECTION",
+            "techName": "zalaczniki",
+            "title": "Załączniki",
+            "description": "",
+            "options": [],
+            "validation": [],
+            "readOnly": false,
+            "repeatingSectionGrid": [
+              {
+                "x": 0,
+                "y": 0,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "o1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b65",
+                  "type": "FILE_UPLOADER",
+                  "techName": "korekta_deklaracji",
+                  "title": "Korekta deklaracji",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 0,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "p1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b66",
+                  "type": "FILE_UPLOADER",
+                  "techName": "zalacznik_dodatkowy_1",
+                  "title": "Załącznik dodatkowy 1",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 1,
+                  "tooltipMessage": ""
+                }
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "rows": 1,
+                "cols": 3,
+                "field": {
+                  "id": "q1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b67",
+                  "type": "FILE_UPLOADER",
+                  "techName": "zalacznik_dodatkowy_2",
+                  "title": "Załącznik dodatkowy 2",
+                  "description": "",
+                  "options": [],
+                  "validation": [],
+                  "readOnly": false,
+                  "repeatingSectionGrid": [],
+                  "states": [],
+                  "questionOrder": 2,
+                  "tooltipMessage": ""
+                }
+              }
+            ],
+            "states": [],
+            "questionOrder": 3,
+            "tooltipMessage": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "r1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b68",
+      "title": "Strona końcowa",
+      "type": "FINISH",
+      "questions": []
+    }
+  ],
+  "flow": {
+    "links": [
+      {
+        "id": "0765e5ef-26b7-4139-9a69-1e62be8e1f06",
+        "source": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "target": "r1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b68"
+      }
+    ]
+  }
+}
