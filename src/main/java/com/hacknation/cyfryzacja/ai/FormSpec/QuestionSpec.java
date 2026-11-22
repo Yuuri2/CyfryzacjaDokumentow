@@ -1,4 +1,4 @@
-package com.hacknation.cyfryzacja.formspec;
+package com.hacknation.cyfryzacja.ai.FormSpec;
 
 public record QuestionSpec(
         double x,

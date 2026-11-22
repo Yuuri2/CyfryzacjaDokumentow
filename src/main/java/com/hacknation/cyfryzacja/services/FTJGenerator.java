@@ -14,9 +14,9 @@ import com.hacknation.cyfryzacja.JSONRes.FormDefinition.FormTab;
 import com.hacknation.cyfryzacja.walidacja.FileValidationService.ValidatedFile;
 
 //FTJ to znaczy file to json generator
-@Service 
+@Service
 public class FTJGenerator {
-    public FormDefinition generate(ValidatedFile file){
+    public FormDefinition generate(ValidatedFile file) {
         String mainTabId = UUID.randomUUID().toString();
         String finishTabId = UUID.randomUUID().toString();
 
@@ -33,6 +33,8 @@ public class FTJGenerator {
                         "Dane pobierane z rejestru",
                         null,
                         List.of("REQUIRED"),
+                        null,
+                        null,
                         null,
                         true,
                         null,
@@ -60,6 +62,8 @@ public class FTJGenerator {
                         "summary_info",
                         "Podsumowanie",
                         "Przed wysłaniem sprawdź poprawność wprowadzonych danych.",
+                        null,
+                        null,
                         null,
                         null,
                         null,
