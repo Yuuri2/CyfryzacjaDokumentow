@@ -9,7 +9,8 @@ services:
     environment:
       # Wybierz eden albo local. W obu trybach model to Qwen3.5-9B.
       AI_PROVIDER: ${AI_PROVIDER:-eden}
-      EDENAI_MODEL: ${EDENAI_MODEL:-ionos/Qwen/Qwen3.5-9B}
+      EDENAI_MODEL: ${EDENAI_MODEL:-ovhcloud/Qwen3.5-9B}
+      EDENAI_MAX_OUTPUT_TOKENS: ${EDENAI_MAX_OUTPUT_TOKENS:-8192}
       LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-qwen3.5:9b}
       EDENAI_BASE_URL: http://gateway:8081/v3
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}

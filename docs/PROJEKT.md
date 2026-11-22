@@ -8,7 +8,7 @@ e-skw ma skrócić przygotowanie cyfrowego formularza urzędowego przez automaty
 
 API przyjmuje pojedyncze pliki PDF, DOC, DOCX, ODS, XLSX, JPG, JPEG i PNG. Aplikacja sprawdza nazwę, rozmiar i typ zawartości, wydobywa tekst z dokumentu, wykonuje lokalne OCR dla obrazów i skanowanych PDF-ów, a następnie buduje strukturę stron, sekcji i pól. Odpowiedź musi przejść walidację schematu importu i reguł technicznych.
 
-Generowanie wykorzystuje Qwen3.5-9B. Konfiguracja wybiera albo endpoint `ionos/Qwen/Qwen3.5-9B` przez Eden AI, albo lokalny tag `qwen3.5:9b` przez Ollama. Instrukcja dla modelu jest wspólna. Lokalny tag używa kwantyzacji Q4, więc nie gwarantuje bitowo identycznych wyników z hostowanym endpointem. OCR w obu trybach jest lokalny i korzysta z Tesseract.
+Generowanie wykorzystuje Qwen3.5-9B. Domyślnie aplikacja używa endpointu `ovhcloud/Qwen3.5-9B` przez Eden AI; można wybrać inny przez `EDENAI_MODEL` albo uruchomić lokalny tag `qwen3.5:9b` przez Ollama. Instrukcja dla modelu jest wspólna, a aplikacja prosi o wyłączenie trybu rozumowania Qwen3.5 (obsługę należy potwierdzić dla wybranego endpointu); odpowiedź ma limit 8192 tokenów. Lokalny tag używa kwantyzacji Q4, więc nie gwarantuje bitowo identycznych wyników z hostowanym endpointem. OCR w obu trybach jest lokalny i korzysta z Tesseract.
 
 ## Użytkownik i rezultat
 

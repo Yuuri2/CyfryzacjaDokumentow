@@ -41,7 +41,9 @@ public class DocumentParser implements Parser {
             TesseractOCRConfig tesseract = new TesseractOCRConfig();
             tesseract.setLanguage(OCR_LANGUAGE);
             PDFParserConfig pdf = new PDFParserConfig();
-            pdf.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
+            // OCR only where the PDF has no extractable text, avoiding expensive
+            // page rendering for ordinary digitally-generated PDFs.
+            pdf.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.AUTO);
 
             ParseContext context = new ParseContext();
             context.set(TesseractOCRConfig.class, tesseract);

@@ -36,13 +36,23 @@ public class LocalQwenFormGenerationClient implements FormGenerationClient {
 
     @Override
     public String generateFormDefinition(String filename, String extractedText) {
+        return generate(filename, extractedText, List.of());
+    }
+
+    @Override
+    public String regenerateFormDefinition(String filename, String extractedText, List<String> violations) {
+        return generate(filename, extractedText, violations);
+    }
+
+    private String generate(String filename, String extractedText, List<String> validationIssues) {
         List<Map<String, String>> messages = FormGenerationPrompt.messages(filename, extractedText,
-                dictionaryCatalog.promptText() + initialDataCatalog.promptText());
+                dictionaryCatalog.promptText() + initialDataCatalog.promptText(), validationIssues);
         Map<String, Object> request = Map.of(
                 "model", model,
                 "messages", messages,
                 "stream", false,
                 "format", "json",
+                "think", false,
                 "options", Map.of("temperature", 0, "num_ctx", 32768, "num_predict", 8192));
         final JsonNode response;
         try {
