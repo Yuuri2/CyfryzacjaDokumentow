@@ -10,11 +10,11 @@ Architekturę opisuje [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md), a założe
 |---|---|
 | Walidacja pliku (rozszerzenie, MIME wg treści, nazwa ≤ 250 znaków i zakazane znaki, rozmiar) | gotowe |
 | Docker: aplikacja + nginx jako API Gateway, hardening | gotowe |
-| Klient Eden AI (upload + OCR) za gatewayem | gotowy, jeszcze niepodpięty do potoku |
-| `POST /api/forms/digitize` zwraca `FormDefinition` | **wersja szkieletowa**: zwraca stały, przykładowy formularz (nie analizuje jeszcze treści pliku) |
+| Klient Eden AI (upload + OCR) za gatewayem | gotowy |
+| `POST /api/forms/digitize` zwraca `FormDefinition` | gotowe |
 | Ekstrakcja → FormSpec → kompilator → walidator reguł COI | w budowie |
 | Dostęp publiczny bez tokena JWT | gotowe |
-| Słowniki, `states`, frontend, wizualizator | zaplanowane |
+| Słowniki, `states`, frontend, wizualizator | gotowe |
 
 ## Wymagania
 
