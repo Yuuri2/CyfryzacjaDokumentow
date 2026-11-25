@@ -2,8 +2,6 @@
 
 **Uwaga 2:** Wyniki z `feature/working-pipeline` (test A) znajdują się w katalogu `pliki wynikowe`.
 
-link do filmiku: https://drive.google.com/file/d/1ZPqfxcUKlCRLPcwLq3v7wI0BeqBj88ps/view?usp=sharing
-
 # e-skw — cyfryzacja formularzy urzędowych
 
 To REST API przyjmuje pojedynczy blankiet i zwraca konfigurację formularza w JSON-ie dla Generatora Formularzy COI. Obsługiwane formaty: PDF, DOC, DOCX, ODS, XLSX, JPG, JPEG i PNG. Projekt powstał w ramach wyzwania HackNation 2026 „Cyfryzacja formularzy”.
